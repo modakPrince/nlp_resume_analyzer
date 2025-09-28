@@ -68,21 +68,23 @@ def analyze_resume():
 
         # Perform advanced analysis
         similarity_score = calculate_similarity(resume_text, job_description)
-        quality_score = get_resume_quality_score(resume_text)
+        quality_analysis = get_resume_quality_score(resume_text)
         matched_keywords, missing_keywords = analyze_keywords(skills, job_description)
 
         # Clean up the uploaded file after processing
         os.remove(resume_path)
 
-        # Package results into a dictionary (NOTE: template expects flat keys currently)
+        # Package results into a dictionary with enhanced action verb analysis
         results = {
             'name': name,
             'email': email,
             'phone': phone,
             'similarity_score': f"{similarity_score:.2%}",
-            'quality_score': f"{quality_score:.2f}",
+            'quality_score': f"{quality_analysis['overall_score']:.2f}",
             'matched_keywords': matched_keywords,
-            'missing_keywords': missing_keywords
+            'missing_keywords': missing_keywords,
+            'quality_analysis': quality_analysis,  # Include full analysis for UI
+            'action_verb_analysis': quality_analysis['action_verb_analysis']
         }
 
         # Render the results page with the analysis data

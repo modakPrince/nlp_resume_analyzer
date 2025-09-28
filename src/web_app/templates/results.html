@@ -90,6 +90,75 @@
         </div>
       </section>
 
+      <!-- Action Verb Analysis -->
+      {% if results.action_verb_analysis %}
+      <section class="card-tw fade-in mb-12">
+        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xs">D</span> Action Verb Analysis</h3>
+        
+        <!-- Verb Tier Summary -->
+        <div class="grid md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-medium text-red-700 dark:text-red-300 uppercase tracking-wide">Impact Verbs</span>
+              <span class="text-lg font-bold text-red-600 dark:text-red-400">{{ results.action_verb_analysis.tier_counts.impact }}</span>
+            </div>
+            <p class="text-xs text-red-600 dark:text-red-400">Leadership & Innovation (3x weight)</p>
+            {% if results.action_verb_analysis.impact_verbs %}
+              <div class="mt-2 flex flex-wrap gap-1">
+                {% for verb in results.action_verb_analysis.impact_verbs[:5] %}
+                  <span class="text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-2 py-1 rounded">{{ verb }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wide">Build Verbs</span>
+              <span class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ results.action_verb_analysis.tier_counts.build }}</span>
+            </div>
+            <p class="text-xs text-blue-600 dark:text-blue-400">Creation & Implementation (2x weight)</p>
+            {% if results.action_verb_analysis.build_verbs %}
+              <div class="mt-2 flex flex-wrap gap-1">
+                {% for verb in results.action_verb_analysis.build_verbs[:5] %}
+                  <span class="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">{{ verb }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-800 rounded-lg p-3">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Support Verbs</span>
+              <span class="text-lg font-bold text-gray-600 dark:text-gray-400">{{ results.action_verb_analysis.tier_counts.support }}</span>
+            </div>
+            <p class="text-xs text-gray-600 dark:text-gray-400">Collaboration & Support (1x weight)</p>
+            {% if results.action_verb_analysis.support_verbs %}
+              <div class="mt-2 flex flex-wrap gap-1">
+                {% for verb in results.action_verb_analysis.support_verbs[:5] %}
+                  <span class="text-xs bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">{{ verb }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Score Summary -->
+        <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-semibold text-indigo-900 dark:text-indigo-100">Weighted Action Verb Score</h4>
+              <p class="text-sm text-indigo-700 dark:text-indigo-300">{{ results.action_verb_analysis.total_verbs }} verbs total • {{ results.action_verb_analysis.weighted_score }} weighted points</p>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{{ "%.1f"|format(results.action_verb_analysis.weighted_score) }}</div>
+              <div class="text-xs text-indigo-500 dark:text-indigo-400">Total Score</div>
+            </div>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
       <!-- Recommendations Section -->
       <section class="card-tw fade-in mb-14">
         <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xs">D</span> Recommendations</h3>

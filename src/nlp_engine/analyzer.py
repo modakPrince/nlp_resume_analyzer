@@ -42,13 +42,6 @@ def warm_up_models():
     _ = _get_nlp()
 
 
-# --- Constants for Quality Score ---
-ACTION_VERBS = [
-    'developed', 'engineered', 'led', 'managed', 'created', 'built', 'implemented',
-    'achieved', 'increased', 'reduced', 'improved', 'optimized', 'automated',
-    'designed', 'analyzed', 'collaborated', 'responsible'
-]
-
 # --- Analysis Functions ---
 def calculate_similarity(resume_text, job_description):
     """Calculates semantic similarity between resume and job description."""
@@ -60,38 +53,85 @@ def calculate_similarity(resume_text, job_description):
 
 def get_resume_quality_score(resume_text):
     """
-    Calculates a composite quality score based on action verbs, quantifiable
+    Calculates a composite quality score based on weighted action verbs, quantifiable
     achievements, and conciseness.
+    
+    Returns:
+        dict: {
+            'overall_score': float,
+            'action_verb_analysis': dict,
+            'quantifiable_score': float, 
+            'conciseness_score': float,
+            'breakdown': dict
+        }
     """
     doc = _get_nlp()(resume_text)
     lines = [line.strip() for line in resume_text.split('\n') if line.strip()]
     
-    action_verb_count = sum(1 for line in lines if line.split(' ')[0].lower() in ACTION_VERBS)
-    action_verb_score = (action_verb_count / len(lines)) * 100 if lines else 0
+    # Get weighted action verb analysis
+    action_verb_analysis = parser.extract_action_verbs(resume_text)
+    
+    # Calculate action verb score based on weighted tiers
+    if lines:
+        # Normalize weighted score by number of lines (bullets)
+        avg_weight_per_line = action_verb_analysis['weighted_score'] / len(lines)
+        
+        # Scale to 0-100 (assuming max realistic average weight per line is ~2.0)
+        action_verb_score = min(avg_weight_per_line * 50, 100)
+    else:
+        action_verb_score = 0
 
+    # Quantifiable achievements score
     quantifiable_count = len(re.findall(r'\b\d+\%?\b|\$\d+', resume_text))
     quantifiable_score = min(quantifiable_count * 10, 100)
 
+    # Conciseness score
     sentences = list(doc.sents)
     total_words = sum(len(sent) for sent in sentences)
     avg_words_per_sentence = total_words / len(sentences) if sentences else 0
     conciseness_score = max(0, 100 - (avg_words_per_sentence * 2))
 
-    final_score = (action_verb_score * 0.5) + (quantifiable_score * 0.3) + (conciseness_score * 0.2)
-    return min(final_score, 100)
+    # Weighted final score (emphasize action verbs more)
+    final_score = (action_verb_score * 0.6) + (quantifiable_score * 0.25) + (conciseness_score * 0.15)
+    
+    return {
+        'overall_score': min(final_score, 100),
+        'action_verb_analysis': action_verb_analysis,
+        'quantifiable_score': quantifiable_score,
+        'conciseness_score': conciseness_score,
+        'breakdown': {
+            'action_verbs': action_verb_score,
+            'quantifiable': quantifiable_score,
+            'conciseness': conciseness_score
+        }
+    }
 
 def analyze_keywords(resume_skills, job_description):
     """
     Finds matched and missing skills between the resume and job description.
+    Uses the YAML-based skills configuration.
     """
     # Extract potential skills from the job description using a simple regex
     jd_skills = set(re.findall(r'\b[A-Za-z-]+\b', job_description.lower()))
     
-    # Filter against our known skills database for relevance
-    required_skills = set(skill for skill in parser.SKILLS_DB if skill in jd_skills)
+    # Get the skills list from YAML configuration
+    try:
+        from .config_loader import get_config_loader
+        config_loader = get_config_loader()
+        skills_list = config_loader.get_skills_list()
+        
+        # Filter against our known skills database for relevance
+        required_skills = set(skill for skill in skills_list if skill.lower() in jd_skills)
+        
+    except Exception as e:
+        print(f"Warning: Could not load skills configuration: {e}")
+        required_skills = set()
     
-    matched_skills = required_skills.intersection(resume_skills)
-    missing_skills = required_skills.difference(resume_skills)
+    # Convert resume_skills to set for easier operations
+    resume_skills_set = set(resume_skills) if resume_skills else set()
+    
+    matched_skills = required_skills.intersection(resume_skills_set)
+    missing_skills = required_skills.difference(resume_skills_set)
     
     return list(matched_skills), list(missing_skills)
 
