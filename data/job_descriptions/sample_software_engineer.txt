@@ -1,0 +1,37 @@
+Software Engineer Position
+
+We are looking for a skilled Software Engineer to join our dynamic development team. This is an excellent opportunity for a motivated individual to work on cutting-edge projects and contribute to our company's growth.
+
+Responsibilities:
+• Develop and maintain web applications using modern technologies
+• Design and implement scalable backend systems
+• Collaborate with frontend developers to integrate user-facing elements
+• Write clean, maintainable, and efficient code
+• Participate in code reviews and team meetings
+• Troubleshoot and debug applications
+• Stay up-to-date with emerging technologies and industry trends
+
+Required Skills:
+• 3+ years of experience in software development
+• Proficiency in Python, JavaScript, and SQL
+• Experience with React.js and Node.js
+• Knowledge of RESTful API development
+• Familiarity with database design and optimization
+• Experience with version control systems (Git)
+• Understanding of Agile development methodologies
+
+Preferred Qualifications:
+• Bachelor's degree in Computer Science or related field
+• Experience with cloud platforms (AWS, Azure, or GCP)
+• Knowledge of containerization technologies (Docker, Kubernetes)
+• Familiarity with CI/CD pipelines
+• Experience with testing frameworks
+• Strong problem-solving and analytical skills
+• Excellent communication and teamwork abilities
+
+What We Offer:
+• Competitive salary and benefits package
+• Flexible working arrangements
+• Professional development opportunities
+• Collaborative and innovative work environment
+• Health and wellness programs

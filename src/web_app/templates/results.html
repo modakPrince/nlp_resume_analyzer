@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analysis Results • Resume Analyzer</title>
+  <link href="{{ url_for('static', filename='css/tw-build.css') }}" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>body{font-family:'Inter',sans-serif;}</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 text-slate-800 dark:text-slate-100 transition-base">
+  <div class="max-w-6xl mx-auto px-5 md:px-8 py-10">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-10 fade-in">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-indigo-300 dark:to-violet-300">Analysis Report</h1>
+        <p class="mt-2 text-sm md:text-base text-slate-600 dark:text-slate-400 max-w-xl">Semantic relevance, quality signals & keyword coverage extracted from the uploaded resume.</p>
+      </div>
+      <div class="flex gap-3">
+        <button id="themeToggle" class="btn-outline-tw text-xs md:text-sm">Toggle Theme</button>
+        <a href="{{ url_for('index') }}" class="btn-primary-tw text-xs md:text-sm">New Analysis</a>
+      </div>
+    </div>
+
+    {% if results %}
+      {% set sim_pct = results.similarity_score.replace('%','') %}
+      {% set qual_pct = results.quality_score.replace('/100','') %}
+      <!-- Top Summary Cards -->
+      <section class="grid md:grid-cols-3 gap-8 mb-10">
+        <!-- Candidate Info -->
+        <div class="card-tw fade-in flex flex-col justify-between">
+          <div>
+            <h2 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xs">A</span> Candidate</h2>
+            <ul class="space-y-1 text-sm">
+              <li><span class="text-slate-500 dark:text-slate-400">Name:</span> {{ results.name or 'N/A' }}</li>
+              <li><span class="text-slate-500 dark:text-slate-400">Email:</span> {{ results.email or 'N/A' }}</li>
+              <li><span class="text-slate-500 dark:text-slate-400">Phone:</span> {{ results.phone or 'N/A' }}</li>
+            </ul>
+          </div>
+          <p class="mt-4 text-[11px] leading-relaxed text-slate-500 dark:text-slate-500">Improve clarity with concise bullets, action verbs & quantified outcomes. Tailor key tech stacks to the role.</p>
+        </div>
+
+        <!-- Semantic Match -->
+        <div class="card-tw fade-in flex flex-col items-center justify-center text-center relative overflow-hidden">
+          <h2 class="font-semibold text-sm uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-4">Semantic Match</h2>
+          <div class="metric-ring mb-3" style="--pct: {{ sim_pct }}%"><span>{{ results.similarity_score }}</span></div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 max-w-[14ch]">Alignment with job description content.</p>
+          <div class="absolute inset-0 pointer-events-none opacity-[0.07] bg-[radial-gradient(circle_at_70%_30%,#6366f1,transparent_60%)]"></div>
+        </div>
+
+        <!-- Quality Score -->
+        <div class="card-tw fade-in flex flex-col items-center justify-center text-center relative overflow-hidden">
+          <h2 class="font-semibold text-sm uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-4">Resume Quality</h2>
+            <div class="metric-ring mb-3" style="--pct: {{ qual_pct }}%"><span>{{ qual_pct }}%</span></div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 max-w-[16ch]">Action verbs • Impact • Conciseness.</p>
+            <div class="absolute inset-0 pointer-events-none opacity-[0.07] bg-[radial-gradient(circle_at_30%_70%,#6366f1,transparent_60%)]"></div>
+        </div>
+      </section>
+
+      <!-- Keywords & Skills -->
+      <section class="grid md:grid-cols-2 gap-8 mb-12">
+        <!-- Matched Skills -->
+        <div class="card-tw fade-in">
+          <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xs">B</span> Matched Keywords</h3>
+          {% if results.matched_keywords %}
+            <div class="flex flex-wrap">
+              {% for skill in results.matched_keywords %}
+                <span class="badge-skill">{{ skill }}</span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-xs text-slate-500 dark:text-slate-500">No overlapping keywords found.</p>
+          {% endif %}
+        </div>
+        <!-- Missing Skills -->
+        <div class="card-tw fade-in">
+          <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xs">C</span> Suggested Additions</h3>
+          {% if results.missing_keywords %}
+            <p class="text-xs mb-3 text-slate-500 dark:text-slate-500">Consider incorporating these relevant terms naturally:</p>
+            <div class="flex flex-wrap">
+              {% for skill in results.missing_keywords %}
+                <span class="badge-skill badge-missing">{{ skill }}</span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-xs text-green-600 dark:text-green-400 font-medium">Great coverage — no critical gaps 🎉</p>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- Recommendations Section -->
+      <section class="card-tw fade-in mb-14">
+        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xs">D</span> Recommendations</h3>
+        <ul class="text-sm space-y-2 list-disc pl-5 marker:text-indigo-500 dark:marker:text-indigo-400">
+          <li>Add strong past-tense action verbs at the start of experience bullets if missing.</li>
+          <li>Quantify impact (%, $, time saved, scale) in at least 30–40% of bullets.</li>
+          <li>Group tools & tech logically; avoid raw comma dumps.</li>
+          <li>Tailor top 3–5 achievements to mirror role responsibilities.</li>
+        </ul>
+      </section>
+    {% else %}
+      <p class="text-slate-600 dark:text-slate-400">No results to display.</p>
+    {% endif %}
+
+    <footer class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-500 flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
+      <p>© {{ 2025 }} Resume Analyzer</p>
+      <p>Semantic + structural metrics preview.</p>
+    </footer>
+  </div>
+
+  <script>
+    const root = document.documentElement; const btn = document.getElementById('themeToggle');
+    (function(){ const saved = localStorage.getItem('theme'); if(saved==='dark'){ root.classList.add('dark'); } })();
+    if(btn){ btn.addEventListener('click',()=>{ const d = root.classList.toggle('dark'); localStorage.setItem('theme', d? 'dark':'light'); }); }
+  </script>
+</body>
+</html>

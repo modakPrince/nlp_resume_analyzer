@@ -1,0 +1,217 @@
+/* Custom CSS for NLP Resume Analyzer */
+
+:root {
+    --primary-color: #0d6efd;
+    --success-color: #198754;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #0dcaf0;
+    --dark-color: #212529;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.bg-gradient {
+    background: linear-gradient(135deg, var(--primary-color), #6f42c1);
+}
+
+/* Score Circle */
+.score-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+}
+
+.score-text {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: white;
+}
+
+/* Metric Cards */
+.metric-card {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+    background: #f8f9fa;
+    margin-bottom: 1rem;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Keyword Tags */
+.keyword-tags .badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.skill-tags .badge {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.6rem;
+}
+
+/* Recommendation Cards */
+.recommendation-card {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* File Upload Styling */
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Progress Bar Animation */
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Card Hover Effects */
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+/* Loading Indicator */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .score-circle {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .score-text {
+        font-size: 1rem;
+    }
+    
+    .metric-value {
+        font-size: 1.2rem;
+    }
+    
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+}
+
+/* Color Variants */
+.bg-green {
+    background-color: var(--success-color) !important;
+}
+
+.bg-blue {
+    background-color: var(--info-color) !important;
+}
+
+.bg-orange {
+    background-color: var(--warning-color) !important;
+}
+
+.bg-red {
+    background-color: var(--danger-color) !important;
+}
+
+/* Text Color Variants */
+.text-green {
+    color: var(--success-color) !important;
+}
+
+.text-blue {
+    color: var(--info-color) !important;
+}
+
+.text-orange {
+    color: var(--warning-color) !important;
+}
+
+.text-red {
+    color: var(--danger-color) !important;
+}
+
+/* Animation for page load */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Navbar styling */
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.3rem;
+}
+
+/* Form styling */
+.form-label {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+.form-text {
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+/* Button styling */
+.btn-lg {
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Alert styling */
+.alert {
+    border: none;
+    border-radius: 8px;
+}
+
+/* Features section styling */
+.card.border-0 {
+    border: 1px solid rgba(0,0,0,0.1) !important;
+}
+
+.fa-3x {
+    font-size: 2.5rem !important;
+}

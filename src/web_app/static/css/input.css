@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+/* Modern Color & Style Overrides */
+:root {
+  --c-bg: #f8fafc;
+  --c-text: #0f172a;
+  --c-border: #e2e8f0;
+  --c-card: #ffffff;
+  --c-primary: #0ea5e9; /* Sky Blue */
+  --c-primary-hover: #0284c7;
+  --c-primary-light: #f0f9ff;
+  --c-primary-text: #0369a1;
+  --c-muted-text: #64748b;
+  --c-shadow: rgba(14, 165, 233, 0.15);
+}
+html.dark {
+  --c-bg: #020617;
+  --c-text: #e2e8f0;
+  --c-border: #1e293b;
+  --c-card: #0f172a;
+  --c-primary: #38bdf8;
+  --c-primary-hover: #0ea5e9;
+  --c-primary-light: rgba(56, 189, 248, 0.1);
+  --c-primary-text: #7dd3fc;
+  --c-muted-text: #94a3b8;
+  --c-shadow: rgba(56, 189, 248, 0.1);
+}
+
+/* Base Body Styles */
+body {
+  background-color: var(--c-bg);
+  color: var(--c-text);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Button Styles */
+.btn-primary-tw {
+  background-color: var(--c-primary);
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 14px 0 var(--c-shadow);
+}
+.btn-primary-tw:hover {
+  background-color: var(--c-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px 0 var(--c-shadow);
+}
+.btn-outline-tw {
+  background-color: transparent;
+  border: 1px solid var(--c-border);
+  color: var(--c-muted-text);
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+.btn-outline-tw:hover {
+  border-color: var(--c-primary);
+  color: var(--c-primary);
+  background-color: var(--c-primary-light);
+}
+
+/* Card Styles */
+.card-tw {
+  background-color: var(--c-card);
+  border: 1px solid var(--c-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 14px 0 rgba(0,0,0,0.02);
+  transition: all 0.2s ease-in-out;
+}
+.card-tw:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px 0 rgba(0,0,0,0.04);
+}
+
+/* Input Styles */
+.input-base {
+  width: 100%;
+  border: 1px solid var(--c-border);
+  background-color: var(--c-bg);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  transition: all 0.2s ease-in-out;
+}
+.input-base:focus {
+  outline: none;
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px var(--c-primary-light);
+}
+
+/* Dropzone Styles */
+.dropzone {
+  border: 2px dashed var(--c-border);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+.dropzone:hover, .dropzone.dragover {
+  border-color: var(--c-primary);
+  background-color: var(--c-primary-light);
+}
+
+/* Badge Styles */
+.badge-skill {
+  background-color: var(--c-primary-light);
+  color: var(--c-primary-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  margin: 0.125rem;
+}
+.badge-missing {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+html.dark .badge-missing {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+}
+
+/* General Animation */
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

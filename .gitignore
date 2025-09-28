@@ -1,0 +1,178 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+.envrc
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.pyd
+*.pyo
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Executables and binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+.tox/
+.nox/
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+pyvenv.cfg
+
+# IDE and Editors
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.sublime-project
+.sublime-workspace
+
+# Spyder
+.spyderproject
+.spyproject
+
+# Rope
+.ropeproject
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Flask
+instance/
+.webassets-cache
+
+# Uploads directory (temporary files)
+uploads/*
+!uploads/.gitkeep
+
+# Model files (too large for git)
+models/
+*.model
+*.bin
+*.pkl
+*.pickle
+*.h5
+*.onnx
+*.pb
+*.pth
+*.safetensors
+
+# Logs
+logs/
+*.log
+*.log.*
+.logs/
+
+# Jupyter
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+db.sqlite3
+
+# Configuration backups
+*.bak
+*.backup
+*.orig
+*.tmp
+
+# Cache directories
+.cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# Profiling data
+.prof
+
+# Security and secrets
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.yaml
+secrets.json
+
+# Data files (often large)
+*.csv
+*.tsv
+*.parquet
+*.json.gz
+data/raw/
+data/processed/
+!data/sample_*
+
+# Temporary files
+*.temp
+*.swp
+*~
+.tmp/
+Rough_agent_files/Screenshot 2025-08-10 030649.png

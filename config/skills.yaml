@@ -1,0 +1,90 @@
+# Skills Configuration for Resume Analyzer
+# Organized by categories with synonyms support
+
+programming_languages:
+  - name: "Python"
+    synonyms: ["py", "python3", "python2"]
+  - name: "Java"
+    synonyms: ["jvm", "openjdk"]
+  - name: "JavaScript"
+    synonyms: ["js", "ecmascript", "es6", "es2015", "nodejs", "node.js"]
+  - name: "C++"
+    synonyms: ["cpp", "c plus plus", "cplusplus"]
+  - name: "SQL"
+    synonyms: ["structured query language", "mysql", "postgresql", "sqlite"]
+  - name: "HTML"
+    synonyms: ["html5", "hypertext markup language"]
+  - name: "CSS"
+    synonyms: ["css3", "cascading style sheets", "stylesheet"]
+
+web_frameworks:
+  - name: "React"
+    synonyms: ["reactjs", "react.js"]
+  - name: "Angular"
+    synonyms: ["angularjs", "angular.js"]
+  - name: "Vue"
+    synonyms: ["vuejs", "vue.js"]
+  - name: "Flask"
+    synonyms: ["python flask"]
+  - name: "Django"
+    synonyms: ["django framework"]
+
+data_science_libraries:
+  - name: "Pandas"
+    synonyms: ["pd"]
+  - name: "NumPy"
+    synonyms: ["numpy", "np"]
+  - name: "Scikit-learn"
+    synonyms: ["sklearn", "scikit learn", "sci-kit learn"]
+  - name: "TensorFlow"
+    synonyms: ["tf", "tensor flow"]
+  - name: "PyTorch"
+    synonyms: ["torch", "pytorch"]
+  - name: "Keras"
+    synonyms: ["keras api"]
+  - name: "Matplotlib"
+    synonyms: ["pyplot", "plt"]
+  - name: "Seaborn"
+    synonyms: ["sns"]
+  - name: "BeautifulSoup"
+    synonyms: ["beautiful soup", "bs4"]
+
+cloud_platforms:
+  - name: "AWS"
+    synonyms: ["amazon web services", "amazon aws"]
+  - name: "Azure"
+    synonyms: ["microsoft azure", "azure cloud"]
+  - name: "Google Cloud"
+    synonyms: ["gcp", "google cloud platform", "google cloud services"]
+
+devops_tools:
+  - name: "Docker"
+    synonyms: ["containerization", "containers"]
+  - name: "Kubernetes"
+    synonyms: ["k8s", "kube", "container orchestration"]
+  - name: "Git"
+    synonyms: ["version control", "github", "gitlab", "bitbucket"]
+
+databases:
+  - name: "MySQL"
+    synonyms: ["my sql"]
+  - name: "PostgreSQL"
+    synonyms: ["postgres", "psql", "postgresql db"]
+  - name: "MongoDB"
+    synonyms: ["mongo", "mongo db", "nosql"]
+  - name: "SQLite"
+    synonyms: ["sqlite3", "sql lite"]
+
+project_management:
+  - name: "Jira"
+    synonyms: ["atlassian jira"]
+  - name: "Agile"
+    synonyms: ["agile methodology", "agile development"]
+  - name: "Scrum"
+    synonyms: ["scrum methodology", "scrum master"]
+
+general_skills:
+  - name: "Machine Learning"
+    synonyms: ["ml", "artificial intelligence", "ai", "deep learning"]
+  - name: "Data Analysis"
+    synonyms: ["data analytics", "data science", "statistical analysis"]
