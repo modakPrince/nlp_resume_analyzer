@@ -16,6 +16,7 @@ from nlp_engine import (
     parser as resume_parser,
     calculate_similarity,
     get_resume_quality_score,
+    get_enhanced_resume_score,
     analyze_keywords,
 )
 
@@ -47,7 +48,7 @@ def analyze_resume():
     if resume_file.filename == '':
         return "No selected file!", 400
 
-    if resume_file and job_description:
+    if resume_file:  # Allow empty job description for quality-only mode
         # Create a unique filename to prevent overwrites
         unique_filename = str(uuid.uuid4()) + os.path.splitext(resume_file.filename)[1]
         resume_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
@@ -66,25 +67,41 @@ def analyze_resume():
         phone = resume_parser.extract_phone_number(resume_text)
         skills = resume_parser.extract_skills(resume_text)
 
-        # Perform advanced analysis
-        similarity_score = calculate_similarity(resume_text, job_description)
-        quality_analysis = get_resume_quality_score(resume_text)
-        matched_keywords, missing_keywords = analyze_keywords(skills, job_description)
+        # Perform advanced analysis using enhanced scoring system
+        # Handle empty job description (quality-check mode)
+        jd_for_analysis = job_description.strip() if job_description else None
+        enhanced_analysis = get_enhanced_resume_score(resume_text, jd_for_analysis, legacy_format=False)
+        
+        # Maintain backward compatibility for existing template
+        if enhanced_analysis['relevance']['score'] is not None:
+            similarity_score = enhanced_analysis['relevance']['components']['semantic_similarity']
+            matched_keywords = enhanced_analysis['relevance']['matched_keywords']
+            missing_keywords = enhanced_analysis['relevance']['missing_keywords']
+        else:
+            similarity_score = 0
+            matched_keywords, missing_keywords = ([], [])
+        
+        legacy_quality_analysis = get_resume_quality_score(resume_text)  # For backward compatibility
 
         # Clean up the uploaded file after processing
         os.remove(resume_path)
 
-        # Package results into a dictionary with enhanced action verb analysis
+        # Package results with both legacy and enhanced data
         results = {
+            # Legacy format for backward compatibility
             'name': name,
             'email': email,
             'phone': phone,
             'similarity_score': f"{similarity_score:.2%}",
-            'quality_score': f"{quality_analysis['overall_score']:.2f}",
+            'quality_score': f"{legacy_quality_analysis['overall_score']:.2f}",
             'matched_keywords': matched_keywords,
             'missing_keywords': missing_keywords,
-            'quality_analysis': quality_analysis,  # Include full analysis for UI
-            'action_verb_analysis': quality_analysis['action_verb_analysis']
+            'quality_analysis': legacy_quality_analysis,
+            'action_verb_analysis': legacy_quality_analysis['action_verb_analysis'],
+            
+            # Enhanced structured analysis
+            'enhanced_analysis': enhanced_analysis,
+            'has_enhanced_data': True
         }
 
         # Render the results page with the analysis data

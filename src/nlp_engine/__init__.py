@@ -10,6 +10,7 @@ from . import parser  # re-export parser module
 from .analyzer import (
     calculate_similarity,
     get_resume_quality_score,
+    get_enhanced_resume_score,
     analyze_keywords,
 )
 
@@ -17,6 +18,7 @@ __all__ = [
     "parser",
     "calculate_similarity",
     "get_resume_quality_score",
+    "get_enhanced_resume_score",
     "analyze_keywords",
 ]
 

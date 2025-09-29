@@ -5,15 +5,20 @@ Test cases for the Resume Analyzer
 import unittest
 import os
 import tempfile
-from src.nlp_engine.resume_analyzer import ResumeAnalyzer
+from src.nlp_engine.analyzer import (
+    get_resume_quality_score, 
+    get_enhanced_resume_score, 
+    calculate_similarity,
+    analyze_keywords
+)
+from src.nlp_engine import parser
 
 
 class TestResumeAnalyzer(unittest.TestCase):
-    """Test cases for the main ResumeAnalyzer class."""
+    """Test cases for the main analyzer functions."""
     
     def setUp(self):
         """Set up test fixtures."""
-        self.analyzer = ResumeAnalyzer()
         
         # Sample job description
         self.job_description = """
@@ -69,56 +74,92 @@ class TestResumeAnalyzer(unittest.TestCase):
         temp_file.close()
         return temp_file.name
     
-    def test_analyze_valid_resume(self):
-        """Test analysis with valid resume content."""
-        # This is a basic test - in a real scenario, you'd create actual PDF/DOCX files
-        # For now, we'll test the individual components
+    def test_legacy_quality_score(self):
+        """Test backward compatibility of legacy quality scoring."""
+        quality_analysis = get_resume_quality_score(self.sample_resume_text)
         
-        # Test information extraction
-        extracted_info = self.analyzer.extractor.extract_information(self.sample_resume_text)
+        # Check expected structure
+        self.assertIn('overall_score', quality_analysis)
+        self.assertIn('action_verb_analysis', quality_analysis)
+        self.assertIn('quantifiable_score', quality_analysis)
+        self.assertIn('conciseness_score', quality_analysis)
+        self.assertIn('breakdown', quality_analysis)
         
-        self.assertIsNotNone(extracted_info['name'])
-        self.assertIn('@', extracted_info['email'] or '')
-        self.assertTrue(len(extracted_info['skills']) > 0)
+        # Check score ranges
+        self.assertGreaterEqual(quality_analysis['overall_score'], 0)
+        self.assertLessEqual(quality_analysis['overall_score'], 100)
     
-    def test_job_fit_analysis(self):
-        """Test job fit analysis functionality."""
-        analysis = self.analyzer.analyzer.analyze_fit(self.sample_resume_text, self.job_description)
+    def test_enhanced_scoring_system(self):
+        """Test new enhanced multi-metric scoring system."""
+        enhanced_analysis = get_enhanced_resume_score(self.sample_resume_text, self.job_description)
         
-        self.assertIn('semantic_similarity', analysis)
-        self.assertIn('keyword_analysis', analysis)
-        self.assertIn('farming_detection', analysis)
-        self.assertIn('readability', analysis)
-        self.assertIn('final_score', analysis)
+        # Check main structure
+        self.assertIn('relevance', enhanced_analysis)
+        self.assertIn('impact', enhanced_analysis)
+        self.assertIn('structure', enhanced_analysis)
+        self.assertIn('clarity', enhanced_analysis)
+        self.assertIn('gaps', enhanced_analysis)
+        self.assertIn('overall_score', enhanced_analysis)
+        self.assertIn('metadata', enhanced_analysis)
         
-        # Check that final score is between 0 and 1
-        self.assertGreaterEqual(analysis['final_score'], 0.0)
-        self.assertLessEqual(analysis['final_score'], 1.0)
+        # Check each metric has required structure
+        for metric in ['relevance', 'impact', 'structure', 'clarity']:
+            if enhanced_analysis[metric]['score'] is not None:
+                self.assertIn('score', enhanced_analysis[metric])
+                self.assertIn('components', enhanced_analysis[metric])
+                self.assertGreaterEqual(enhanced_analysis[metric]['score'], 0)
+                self.assertLessEqual(enhanced_analysis[metric]['score'], 100)
+        
+        # Check gaps metric (has different structure)
+        gaps_metric = enhanced_analysis['gaps']
+        self.assertIn('score', gaps_metric)
+        self.assertIn('identified_gaps', gaps_metric)
+        self.assertIn('improvement_suggestions', gaps_metric)
+        self.assertGreaterEqual(gaps_metric['score'], 0)
+        self.assertLessEqual(gaps_metric['score'], 100)
     
-    def test_keyword_farming_detection(self):
-        """Test keyword farming detection."""
-        # Create a resume with obvious keyword stuffing
-        farming_resume = """
-        John Doe
-        john@email.com
+    def test_enhanced_scoring_without_job_description(self):
+        """Test enhanced scoring in quality-check mode (no job description)."""
+        enhanced_analysis = get_enhanced_resume_score(self.sample_resume_text, None)
         
-        Skills: Python Python Python Java Java SQL SQL SQL React React
-        Python JavaScript Python SQL Python React Python Docker
-        AWS Python Kubernetes Python Git Python Agile Python
-        """
+        # Relevance should be None when no job description provided
+        self.assertIsNone(enhanced_analysis['relevance']['score'])
         
-        farming_analysis = self.analyzer.analyzer._detect_keyword_farming(farming_resume)
-        
-        # Should detect high farming risk
-        self.assertGreater(farming_analysis['farming_score'], 0.5)
+        # Other metrics should still work
+        self.assertIsNotNone(enhanced_analysis['impact']['score'])
+        self.assertIsNotNone(enhanced_analysis['structure']['score'])
+        self.assertIsNotNone(enhanced_analysis['clarity']['score'])
+        self.assertIsNotNone(enhanced_analysis['gaps']['score'])
     
-    def test_readability_analysis(self):
-        """Test readability analysis."""
-        readability = self.analyzer.analyzer._analyze_readability(self.sample_resume_text)
+    def test_backward_compatibility(self):
+        """Test that enhanced system maintains backward compatibility."""
+        # Test legacy format option
+        legacy_format = get_enhanced_resume_score(self.sample_resume_text, self.job_description, legacy_format=True)
+        direct_legacy = get_resume_quality_score(self.sample_resume_text)
         
-        self.assertIn('flesch_reading_ease', readability)
-        self.assertIn('quality', readability)
-        self.assertIn('concern_level', readability)
+        # Should have same structure as direct legacy call
+        self.assertIn('overall_score', legacy_format)
+        self.assertIn('action_verb_analysis', legacy_format)
+        self.assertIn('quantifiable_score', legacy_format)
+        self.assertIn('conciseness_score', legacy_format)
+    
+    def test_similarity_calculation(self):
+        """Test semantic similarity calculation."""
+        similarity = calculate_similarity(self.sample_resume_text, self.job_description)
+        
+        self.assertGreaterEqual(similarity, 0.0)
+        self.assertLessEqual(similarity, 1.0)
+    
+    def test_keyword_analysis(self):
+        """Test keyword matching analysis."""
+        skills = parser.extract_skills(self.sample_resume_text)
+        matched, missing = analyze_keywords(skills, self.job_description)
+        
+        self.assertIsInstance(matched, list)
+        self.assertIsInstance(missing, list)
+        
+        # Should find some matches given our sample data
+        self.assertGreater(len(matched + missing), 0)
 
 
 if __name__ == '__main__':

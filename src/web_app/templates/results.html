@@ -59,6 +59,126 @@
         </div>
       </section>
 
+      <!-- Enhanced Multi-Metric Analysis -->
+      {% if results.has_enhanced_data and results.enhanced_analysis %}
+      <section class="mb-12">
+        <h2 class="text-2xl font-bold mb-6 text-slate-800 dark:text-slate-100">Detailed Analysis Breakdown</h2>
+        
+        <!-- Five Metric Cards -->
+        <div class="grid md:grid-cols-5 gap-4 mb-8">
+          <!-- Relevance -->
+          {% if results.enhanced_analysis.relevance.score is not none %}
+          <div class="card-tw fade-in text-center">
+            <h3 class="font-semibold text-sm mb-2 text-blue-700 dark:text-blue-300">Relevance</h3>
+            <div class="text-2xl font-bold mb-1 text-blue-600 dark:text-blue-400">{{ "%.0f"|format(results.enhanced_analysis.relevance.score) }}%</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Job Match</p>
+          </div>
+          {% endif %}
+          
+          <!-- Impact -->
+          <div class="card-tw fade-in text-center">
+            <h3 class="font-semibold text-sm mb-2 text-green-700 dark:text-green-300">Impact</h3>
+            <div class="text-2xl font-bold mb-1 text-green-600 dark:text-green-400">{{ "%.0f"|format(results.enhanced_analysis.impact.score) }}%</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Achievement</p>
+          </div>
+          
+          <!-- Structure -->
+          <div class="card-tw fade-in text-center">
+            <h3 class="font-semibold text-sm mb-2 text-purple-700 dark:text-purple-300">Structure</h3>
+            <div class="text-2xl font-bold mb-1 text-purple-600 dark:text-purple-400">{{ "%.0f"|format(results.enhanced_analysis.structure.score) }}%</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Organization</p>
+          </div>
+          
+          <!-- Clarity -->
+          <div class="card-tw fade-in text-center">
+            <h3 class="font-semibold text-sm mb-2 text-orange-700 dark:text-orange-300">Clarity</h3>
+            <div class="text-2xl font-bold mb-1 text-orange-600 dark:text-orange-400">{{ "%.0f"|format(results.enhanced_analysis.clarity.score) }}%</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Readability</p>
+          </div>
+          
+          <!-- Completion -->
+          <div class="card-tw fade-in text-center">
+            <h3 class="font-semibold text-sm mb-2 text-red-700 dark:text-red-300">Completion</h3>
+            <div class="text-2xl font-bold mb-1 text-red-600 dark:text-red-400">{{ "%.0f"|format(results.enhanced_analysis.gaps.score) }}%</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Coverage</p>
+          </div>
+        </div>
+
+        <!-- Detailed Breakdowns -->
+        <div class="grid md:grid-cols-2 gap-8">
+          <!-- Impact Details -->
+          <div class="card-tw fade-in">
+            <h3 class="font-semibold text-lg mb-4 text-green-700 dark:text-green-300">Impact Analysis</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-slate-600 dark:text-slate-400">Quantified Achievements</span>
+                <span class="font-semibold">{{ "%.0f"|format(results.enhanced_analysis.impact.components.quantified_achievements * 100) }}%</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-slate-600 dark:text-slate-400">Leadership Indicators</span>
+                <span class="font-semibold">{{ "%.0f"|format(results.enhanced_analysis.impact.components.leadership_indicators * 100) }}%</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-slate-600 dark:text-slate-400">Action Verb Strength</span>
+                <span class="font-semibold">{{ "%.0f"|format(results.enhanced_analysis.impact.components.action_verb_strength * 100) }}%</span>
+              </div>
+              <div class="text-xs text-slate-500 dark:text-slate-500 mt-3">
+                Found {{ results.enhanced_analysis.impact.details.quantifiable_count }} quantifiable achievements
+              </div>
+            </div>
+          </div>
+
+          <!-- Structure Details -->
+          <div class="card-tw fade-in">
+            <h3 class="font-semibold text-lg mb-4 text-purple-700 dark:text-purple-300">Structure Analysis</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-slate-600 dark:text-slate-400">Section Organization</span>
+                <span class="font-semibold">{{ "%.0f"|format(results.enhanced_analysis.structure.components.section_organization * 100) }}%</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-slate-600 dark:text-slate-400">Contact Info</span>
+                <span class="font-semibold">{{ "%.0f"|format(results.enhanced_analysis.structure.components.contact_completeness * 100) }}%</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-slate-600 dark:text-slate-400">Length Appropriateness</span>
+                <span class="font-semibold">{{ "%.0f"|format(results.enhanced_analysis.structure.components.length_appropriateness * 100) }}%</span>
+              </div>
+              <div class="text-xs text-slate-500 dark:text-slate-500 mt-3">
+                {{ results.enhanced_analysis.structure.details.word_count }} words, {{ results.enhanced_analysis.structure.details.sections_found }} sections
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gaps and Recommendations -->
+        {% if results.enhanced_analysis.gaps.improvement_suggestions %}
+        <div class="card-tw fade-in mt-8">
+          <h3 class="font-semibold text-lg mb-4 text-red-700 dark:text-red-300">Improvement Opportunities</h3>
+          <ul class="space-y-2">
+            {% for suggestion in results.enhanced_analysis.gaps.improvement_suggestions %}
+            <li class="flex items-start gap-2">
+              <span class="text-red-500 dark:text-red-400 mt-1">•</span>
+              <span class="text-sm text-slate-700 dark:text-slate-300">{{ suggestion }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+          
+          {% if results.enhanced_analysis.gaps.critical_missing %}
+          <div class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <h4 class="font-semibold text-sm text-red-700 dark:text-red-300 mb-2">Critical Missing Skills</h4>
+            <div class="flex flex-wrap gap-2">
+              {% for skill in results.enhanced_analysis.gaps.critical_missing %}
+              <span class="text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-2 py-1 rounded">{{ skill }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </section>
+      {% endif %}
+
       <!-- Keywords & Skills -->
       <section class="grid md:grid-cols-2 gap-8 mb-12">
         <!-- Matched Skills -->
@@ -159,15 +279,102 @@
       </section>
       {% endif %}
 
-      <!-- Recommendations Section -->
+      <!-- Dynamic Recommendations Section -->
       <section class="card-tw fade-in mb-14">
-        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xs">D</span> Recommendations</h3>
+        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xs">E</span> Personalized Recommendations</h3>
+        
+        {% if results.has_enhanced_data and results.enhanced_analysis %}
+        <!-- Dynamic recommendations based on scores -->
+        <div class="space-y-3">
+          <!-- Impact-based recommendations -->
+          {% if results.enhanced_analysis.impact.score < 70 %}
+          <div class="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <h4 class="font-semibold text-sm text-amber-800 dark:text-amber-200 mb-2">🎯 Boost Impact</h4>
+            <ul class="text-sm space-y-1 text-amber-700 dark:text-amber-300">
+              {% if results.enhanced_analysis.impact.components.quantified_achievements < 0.5 %}
+              <li>• Add numbers to your achievements: percentages, dollar amounts, team sizes, or timeframes</li>
+              {% endif %}
+              {% if results.enhanced_analysis.impact.components.action_verb_strength < 0.6 %}
+              <li>• Replace weak verbs like "helped" or "worked on" with stronger action verbs like "delivered" or "led"</li>
+              {% endif %}
+              {% if results.enhanced_analysis.impact.components.leadership_indicators < 0.4 %}
+              <li>• Highlight leadership experiences: mention team size, mentoring, or project ownership</li>
+              {% endif %}
+            </ul>
+          </div>
+          {% endif %}
+
+          <!-- Structure-based recommendations -->
+          {% if results.enhanced_analysis.structure.score < 80 %}
+          <div class="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <h4 class="font-semibold text-sm text-blue-800 dark:text-blue-200 mb-2">📋 Improve Structure</h4>
+            <ul class="text-sm space-y-1 text-blue-700 dark:text-blue-300">
+              {% if not results.enhanced_analysis.structure.details.has_email %}
+              <li>• Add a professional email address to your contact information</li>
+              {% endif %}
+              {% if not results.enhanced_analysis.structure.details.has_phone %}
+              <li>• Include a phone number for direct contact</li>
+              {% endif %}
+              {% if results.enhanced_analysis.structure.details.sections_found < 4 %}
+              <li>• Add clear section headers: Experience, Education, Skills, Projects</li>
+              {% endif %}
+              {% if results.enhanced_analysis.structure.details.word_count < 300 %}
+              <li>• Expand your content - aim for 400-800 words for optimal length</li>
+              {% elif results.enhanced_analysis.structure.details.word_count > 1000 %}
+              <li>• Consider condensing content - aim for 400-800 words for better readability</li>
+              {% endif %}
+            </ul>
+          </div>
+          {% endif %}
+
+          <!-- Clarity-based recommendations -->
+          {% if results.enhanced_analysis.clarity.score < 75 %}
+          <div class="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <h4 class="font-semibold text-sm text-green-800 dark:text-green-200 mb-2">✨ Enhance Clarity</h4>
+            <ul class="text-sm space-y-1 text-green-700 dark:text-green-300">
+              {% if results.enhanced_analysis.clarity.details.avg_words_per_sentence > 20 %}
+              <li>• Shorten your bullet points - aim for 15-18 words per sentence for better readability</li>
+              {% endif %}
+              {% if results.enhanced_analysis.clarity.components.technical_precision < 0.5 %}
+              <li>• Add more specific technical terms relevant to your field</li>
+              {% endif %}
+              <li>• Use bullet points consistently to improve scanability</li>
+            </ul>
+          </div>
+          {% endif %}
+
+          <!-- Relevance-based recommendations -->
+          {% if results.enhanced_analysis.relevance.score is not none and results.enhanced_analysis.relevance.score < 70 %}
+          <div class="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+            <h4 class="font-semibold text-sm text-purple-800 dark:text-purple-200 mb-2">🎯 Improve Job Alignment</h4>
+            <ul class="text-sm space-y-1 text-purple-700 dark:text-purple-300">
+              {% if results.enhanced_analysis.relevance.components.keyword_match_rate < 0.6 %}
+              <li>• Incorporate more keywords from the job description naturally into your experience</li>
+              {% endif %}
+              {% if results.enhanced_analysis.relevance.components.semantic_similarity < 0.7 %}
+              <li>• Tailor your language to match the job description's terminology and focus areas</li>
+              {% endif %}
+            </ul>
+          </div>
+          {% endif %}
+
+          <!-- High-level success message -->
+          {% if results.enhanced_analysis.overall_score >= 85 %}
+          <div class="p-4 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg">
+            <h4 class="font-semibold text-green-800 dark:text-green-200 mb-2">🎉 Excellent Resume!</h4>
+            <p class="text-sm text-green-700 dark:text-green-300">Your resume shows strong performance across all metrics. Consider these minor optimizations to reach perfection.</p>
+          </div>
+          {% endif %}
+        </div>
+        {% else %}
+        <!-- Fallback static recommendations -->
         <ul class="text-sm space-y-2 list-disc pl-5 marker:text-indigo-500 dark:marker:text-indigo-400">
           <li>Add strong past-tense action verbs at the start of experience bullets if missing.</li>
           <li>Quantify impact (%, $, time saved, scale) in at least 30–40% of bullets.</li>
           <li>Group tools & tech logically; avoid raw comma dumps.</li>
           <li>Tailor top 3–5 achievements to mirror role responsibilities.</li>
         </ul>
+        {% endif %}
       </section>
     {% else %}
       <p class="text-slate-600 dark:text-slate-400">No results to display.</p>
