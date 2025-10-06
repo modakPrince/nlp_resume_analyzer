@@ -16,7 +16,13 @@
     <div class="flex items-center justify-between mb-10 fade-in">
       <div>
         <h1 class="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-sky-500 to-cyan-400 bg-clip-text text-transparent">Analysis Report</h1>
-        <p class="mt-2 text-sm md:text-base text-slate-600 dark:text-slate-400 max-w-xl">Semantic relevance, quality signals & keyword coverage extracted from the uploaded resume.</p>
+        <p class="mt-2 text-sm md:text-base text-slate-600 dark:text-slate-400 max-w-xl">
+          {% if results.is_quality_mode %}
+          Resume quality analysis with extracted skills and improvement suggestions.
+          {% else %}
+          Semantic relevance, quality signals & keyword coverage extracted from the uploaded resume.
+          {% endif %}
+        </p>
       </div>
       <div class="flex gap-3">
         <button id="viewToggle" class="btn-outline-tw text-xs md:text-sm flex items-center gap-2">
@@ -31,6 +37,27 @@
     </div>
 
     {% if results %}
+      <!-- Quality Check Mode Banner -->
+      {% if results.is_quality_mode %}
+      <div class="card-tw mb-8 bg-sky-50 dark:bg-sky-900/20 border-2 border-sky-200 dark:border-sky-800 fade-in">
+        <div class="flex items-start gap-4">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-sky-100 dark:bg-sky-900/40 flex items-center justify-center text-2xl">
+            ✅
+          </div>
+          <div class="flex-1">
+            <h3 class="text-lg font-bold text-sky-700 dark:text-sky-300 mb-1">Quality Check Mode</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">
+              Your resume has been analyzed for quality metrics only. Job matching was skipped since no job description was provided.
+            </p>
+            <a href="{{ url_for('index') }}" class="inline-flex items-center gap-2 text-sm font-medium text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 transition-colors">
+              <span>Add Job Description for Full Analysis</span>
+              <span>→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      
       {% set sim_pct = results.similarity_score.replace('%','') %}
       {% set qual_pct = results.quality_score.replace('/100','') %}
       
@@ -282,7 +309,8 @@
       </section>
       {% endif %}
 
-      <!-- Keywords & Skills -->
+      <!-- Keywords & Skills (Only in Full Analysis Mode) -->
+      {% if not results.is_quality_mode %}
       <section class="grid md:grid-cols-2 gap-8 mb-12">
         <!-- Matched Skills -->
         <div class="card-tw fade-in">
@@ -312,6 +340,7 @@
           {% endif %}
         </div>
       </section>
+      {% endif %}
 
       <!-- Action Verb Analysis -->
       {% if results.action_verb_analysis %}
@@ -487,7 +516,7 @@
     {% endif %}
 
     <footer class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-500 flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
-      <p>© {{ 2025 }} Resume Analyzer</p>
+      <p>© {{ 2025 }} Resume Analyzer | <a href="/skills" class="text-sky-500 hover:text-sky-600 dark:text-sky-400 dark:hover:text-sky-300 transition-colors">Skills Database</a></p>
       <p>Semantic + structural metrics preview.</p>
     </footer>
   </div>

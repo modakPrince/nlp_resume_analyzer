@@ -19,6 +19,8 @@ from nlp_engine import (
     get_enhanced_resume_score,
     analyze_keywords,
 )
+from nlp_engine.config_loader import get_config_loader
+import yaml
 
 # Initialize the Flask application
 app = Flask(__name__)
@@ -70,6 +72,8 @@ def analyze_resume():
         # Perform advanced analysis using enhanced scoring system
         # Handle empty job description (quality-check mode)
         jd_for_analysis = job_description.strip() if job_description else None
+        is_quality_mode = not jd_for_analysis  # Detect Quality Check Mode
+        
         enhanced_analysis = get_enhanced_resume_score(resume_text, jd_for_analysis, legacy_format=False)
         
         # Maintain backward compatibility for existing template
@@ -88,6 +92,10 @@ def analyze_resume():
 
         # Package results with both legacy and enhanced data
         results = {
+            # Mode detection
+            'mode': 'quality_check' if is_quality_mode else 'full_analysis',
+            'is_quality_mode': is_quality_mode,
+            
             # Legacy format for backward compatibility
             'name': name,
             'email': email,
@@ -108,6 +116,59 @@ def analyze_resume():
         return render_template('results.html', results=results)
 
     return redirect(url_for('index'))
+
+
+@app.route('/skills')
+def skills_explorer():
+    """Renders the skills database explorer page."""
+    # Load the raw skills data from YAML to preserve category structure
+    config_path = os.path.abspath(os.path.join(BASE_DIR, '..', 'config'))
+    skills_file = os.path.join(config_path, 'skills.yaml')
+    
+    try:
+        with open(skills_file, 'r', encoding='utf-8') as f:
+            skills_data = yaml.safe_load(f)
+        
+        # Transform category names to be more readable
+        category_display_names = {
+            'programming_languages': 'Programming Languages',
+            'web_frameworks': 'Web Frameworks',
+            'data_science_libraries': 'Data Science Libraries',
+            'cloud_platforms': 'Cloud Platforms',
+            'devops_tools': 'DevOps Tools',
+            'databases': 'Databases',
+            'project_management': 'Project Management',
+            'testing_frameworks': 'Testing Frameworks',
+            'mobile_development': 'Mobile Development',
+            'machine_learning': 'Machine Learning',
+            'operating_systems': 'Operating Systems',
+            'soft_skills': 'Soft Skills',
+            'methodologies': 'Methodologies',
+            'other_tools': 'Other Tools'
+        }
+        
+        # Organize data by category with display names
+        organized_skills = {}
+        total_skills = 0
+        total_synonyms = 0
+        
+        for category_key, skills_list in skills_data.items():
+            display_name = category_display_names.get(category_key, category_key.replace('_', ' ').title())
+            organized_skills[display_name] = skills_list
+            total_skills += len(skills_list)
+            for skill in skills_list:
+                if 'synonyms' in skill:
+                    total_synonyms += len(skill['synonyms'])
+        
+        stats = {
+            'total_categories': len(organized_skills),
+            'total_skills': total_skills,
+            'total_synonyms': total_synonyms
+        }
+        
+        return render_template('skills.html', skills_data=organized_skills, stats=stats)
+    except Exception as e:
+        return f"Error loading skills data: {str(e)}", 500
 
 
 if __name__ == '__main__':

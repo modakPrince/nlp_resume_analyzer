@@ -62,9 +62,25 @@
                 <div class="card-tw fade-in" style="animation-delay: 0.2s;">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-semibold">Job Description</h2>
-                        <span class="text-xs font-medium text-slate-400 dark:text-slate-500">Step 2</span>
+                        <span class="text-xs font-medium text-slate-400 dark:text-slate-500">Step 2 (Optional)</span>
                     </div>
-                    <textarea id="job_description" name="job_description" rows="12" class="input-base resize-y" placeholder="Paste the full job description here..." required></textarea>
+                    
+                    <!-- Mode Toggle -->
+                    <div class="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="qualityModeToggle" class="w-4 h-4 text-sky-500 rounded border-slate-300 dark:border-slate-600 focus:ring-sky-500 dark:focus:ring-sky-400">
+                            <div class="flex-1">
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Quality Check Only</span>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Skip job matching and get resume quality feedback only</p>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <textarea id="job_description" name="job_description" rows="12" class="input-base resize-y" placeholder="Paste the full job description here (leave empty for quality check only)..."></textarea>
+                    
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                        💡 <span id="modeHint">Tip: Leave empty to get quality feedback without job matching</span>
+                    </p>
                 </div>
             </div>
 
@@ -78,7 +94,10 @@
 
         <!-- Footer -->
         <footer class="text-center mt-16 text-sm text-slate-500 dark:text-slate-400">
-            <p>Built with Python & Tailwind CSS</p>
+            <p>
+                Built with Python & Tailwind CSS | 
+                <a href="/skills" class="text-sky-500 hover:text-sky-600 dark:text-sky-400 dark:hover:text-sky-300 transition-colors">Explore Skills Database</a>
+            </p>
             <button id="themeToggle" class="mt-4 btn-outline-tw text-xs">Toggle Theme</button>
         </footer>
     </div>
@@ -142,6 +161,28 @@
             e.stopPropagation(); // Prevent dropzone click event
             fileInput.value = '';
             showUploadPrompt();
+        });
+
+        // Quality Mode Toggle
+        const qualityToggle = document.getElementById('qualityModeToggle');
+        const jobDescTextarea = document.getElementById('job_description');
+        const modeHint = document.getElementById('modeHint');
+
+        qualityToggle.addEventListener('change', function() {
+            if (this.checked) {
+                // Quality Check Mode enabled
+                jobDescTextarea.disabled = true;
+                jobDescTextarea.value = '';
+                jobDescTextarea.classList.add('opacity-50', 'cursor-not-allowed');
+                jobDescTextarea.placeholder = 'Quality Check Mode - Job description disabled';
+                modeHint.textContent = 'Quality Check Mode: Get resume feedback without job matching';
+            } else {
+                // Full Analysis Mode
+                jobDescTextarea.disabled = false;
+                jobDescTextarea.classList.remove('opacity-50', 'cursor-not-allowed');
+                jobDescTextarea.placeholder = 'Paste the full job description here (leave empty for quality check only)...';
+                modeHint.textContent = 'Tip: Leave empty to get quality feedback without job matching';
+            }
         });
     </script>
 </body>
