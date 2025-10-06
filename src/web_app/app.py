@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import os
 import sys
 import uuid  # To generate unique filenames
+import json  # For storing results in database
 
 # --- Ensure the parent 'src' directory (which contains the 'nlp_engine' package) is on sys.path ---
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))  # points to .../src
@@ -24,6 +25,22 @@ import yaml
 
 # Initialize the Flask application
 app = Flask(__name__)
+
+# Configure database
+# Database file will be stored in: project_root/data/resume_analyzer.db
+DATABASE_PATH = os.path.abspath(os.path.join(BASE_DIR, '..', 'data', 'resume_analyzer.db'))
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DATABASE_PATH}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Disable Flask-SQLAlchemy event system
+app.config['SECRET_KEY'] = 'dev-secret-key-change-in-production'  # For session management
+
+# Import and initialize database
+from models import db, Analysis
+db.init_app(app)
+
+# Create all database tables
+with app.app_context():
+    db.create_all()
+    print(f"✅ Database initialized at: {DATABASE_PATH}")
 
 # Configure a folder to temporarily store uploaded resumes
 UPLOAD_FOLDER = 'uploads'
