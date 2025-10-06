@@ -6,6 +6,9 @@ import os
 import sys
 import uuid  # To generate unique filenames
 import json  # For storing results in database
+import csv  # For CSV export
+from io import StringIO
+from flask import Response  # For file downloads
 
 # --- Ensure the parent 'src' directory (which contains the 'nlp_engine' package) is on sys.path ---
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))  # points to .../src
@@ -128,6 +131,51 @@ def analyze_resume():
             'enhanced_analysis': enhanced_analysis,
             'has_enhanced_data': True
         }
+        
+        # --- Save analysis to database ---
+        try:
+            # Create preview from first 500 characters
+            resume_preview = resume_text[:500] if resume_text else ""
+            
+            # Calculate job match score (0 if quality mode)
+            job_match = enhanced_analysis['relevance']['score'] if not is_quality_mode and enhanced_analysis['relevance']['score'] is not None else 0.0
+            
+            # Calculate quality score from clarity, structure, and impact (average of non-relevance scores)
+            quality_components = [
+                enhanced_analysis['clarity']['score'],
+                enhanced_analysis['structure']['score'],
+                enhanced_analysis['impact']['score']
+            ]
+            quality_score = sum(quality_components) / len(quality_components)
+            
+            # Create database record
+            analysis_record = Analysis(
+                filename=resume_file.filename,
+                extracted_name=name,
+                extracted_email=email,
+                extracted_phone=phone,
+                mode='quality_check' if is_quality_mode else 'full_analysis',
+                quality_score=quality_score,
+                job_match_score=job_match,
+                impact_score=enhanced_analysis['impact']['score'],
+                structure_score=enhanced_analysis['structure']['score'],
+                overall_score=enhanced_analysis['overall_score'],
+                results_json=json.dumps(results),  # Store complete results
+                resume_preview=resume_preview,
+                skills_count=len(skills),
+                matched_keywords_count=len(matched_keywords),
+                missing_keywords_count=len(missing_keywords)
+            )
+            
+            db.session.add(analysis_record)
+            db.session.commit()
+            
+            # Add the database ID to results for potential use
+            results['analysis_id'] = analysis_record.id
+            
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to save analysis to database: {str(e)}")
+            # Continue anyway - don't fail the request if database save fails
 
         # Render the results page with the analysis data
         return render_template('results.html', results=results)
@@ -186,6 +234,178 @@ def skills_explorer():
         return render_template('skills.html', skills_data=organized_skills, stats=stats)
     except Exception as e:
         return f"Error loading skills data: {str(e)}", 500
+
+
+@app.route('/history')
+def history():
+    """Displays the analysis history page with all saved analyses."""
+    # Get filter parameters from query string
+    mode_filter = request.args.get('mode', 'all')
+    search_query = request.args.get('search', '').strip()
+    
+    # Build query
+    query = Analysis.query
+    
+    # Apply mode filter
+    if mode_filter != 'all':
+        query = query.filter_by(mode=mode_filter)
+    
+    # Apply search filter (search in filename and extracted name)
+    if search_query:
+        query = query.filter(
+            db.or_(
+                Analysis.filename.ilike(f'%{search_query}%'),
+                Analysis.extracted_name.ilike(f'%{search_query}%')
+            )
+        )
+    
+    # Order by most recent first
+    analyses = query.order_by(Analysis.upload_date.desc()).all()
+    
+    # Get statistics
+    stats = Analysis.get_statistics()
+    
+    return render_template('history.html', 
+                         analyses=analyses, 
+                         stats=stats,
+                         current_filter=mode_filter,
+                         search_query=search_query)
+
+
+@app.route('/analysis/<int:analysis_id>')
+def view_analysis(analysis_id):
+    """Displays a single saved analysis from the database."""
+    analysis = Analysis.query.get_or_404(analysis_id)
+    
+    # Get the full results from JSON
+    results = analysis.get_results()
+    
+    # Add database metadata
+    results['db_metadata'] = {
+        'id': analysis.id,
+        'upload_date': analysis.upload_date.strftime('%B %d, %Y at %I:%M %p'),
+        'filename': analysis.filename
+    }
+    
+    return render_template('results.html', results=results, from_history=True)
+
+
+@app.route('/analysis/<int:analysis_id>/delete', methods=['POST'])
+def delete_analysis(analysis_id):
+    """Deletes a saved analysis from the database."""
+    try:
+        analysis = Analysis.query.get_or_404(analysis_id)
+        db.session.delete(analysis)
+        db.session.commit()
+        return redirect(url_for('history'))
+    except Exception as e:
+        return f"Error deleting analysis: {str(e)}", 500
+
+
+@app.route('/export/csv')
+def export_csv():
+    """Exports filtered analyses to CSV file."""
+    # Get filter parameters (same as history page)
+    mode_filter = request.args.get('mode', 'all')
+    search_query = request.args.get('search', '').strip()
+    
+    # Build query
+    query = Analysis.query
+    
+    # Apply mode filter
+    if mode_filter != 'all':
+        query = query.filter_by(mode=mode_filter)
+    
+    # Apply search filter
+    if search_query:
+        query = query.filter(
+            db.or_(
+                Analysis.filename.ilike(f'%{search_query}%'),
+                Analysis.extracted_name.ilike(f'%{search_query}%')
+            )
+        )
+    
+    # Order by most recent first
+    analyses = query.order_by(Analysis.upload_date.desc()).all()
+    
+    # Create CSV in memory
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow([
+        'ID',
+        'Upload Date',
+        'Filename',
+        'Name',
+        'Email',
+        'Phone',
+        'Mode',
+        'Quality Score',
+        'Job Match Score',
+        'Impact Score',
+        'Structure Score',
+        'Overall Score',
+        'Skills Count',
+        'Matched Keywords',
+        'Missing Keywords'
+    ])
+    
+    # Write data rows
+    for analysis in analyses:
+        writer.writerow([
+            analysis.id,
+            analysis.upload_date.strftime('%Y-%m-%d %H:%M:%S'),
+            analysis.filename,
+            analysis.extracted_name or '',
+            analysis.extracted_email or '',
+            analysis.extracted_phone or '',
+            analysis.mode,
+            f"{analysis.quality_score:.2f}",
+            f"{analysis.job_match_score:.2f}" if analysis.mode == 'full_analysis' else 'N/A',
+            f"{analysis.impact_score:.2f}",
+            f"{analysis.structure_score:.2f}",
+            f"{analysis.overall_score:.2f}",
+            analysis.skills_count or 0,
+            analysis.matched_keywords_count or 0,
+            analysis.missing_keywords_count or 0
+        ])
+    
+    # Create response with CSV file
+    output.seek(0)
+    
+    # Generate filename with timestamp
+    from datetime import datetime
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"resume_analyses_{timestamp}.csv"
+    
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename={filename}'}
+    )
+
+
+@app.route('/analysis/<int:analysis_id>/export/json')
+def export_single_json(analysis_id):
+    """Exports a single analysis as JSON file."""
+    analysis = Analysis.query.get_or_404(analysis_id)
+    
+    # Get the dictionary representation
+    analysis_dict = analysis.to_dict()
+    
+    # Generate filename
+    from datetime import datetime
+    safe_filename = analysis.filename.replace('.pdf', '').replace('.docx', '').replace(' ', '_')
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"analysis_{safe_filename}_{timestamp}.json"
+    
+    # Create JSON response
+    return Response(
+        json.dumps(analysis_dict, indent=2),
+        mimetype='application/json',
+        headers={'Content-Disposition': f'attachment; filename={filename}'}
+    )
 
 
 if __name__ == '__main__':
