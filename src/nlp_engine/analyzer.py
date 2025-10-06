@@ -141,7 +141,7 @@ def _calculate_structured_metrics(resume_text, job_description=None):
     clarity_score = _calculate_clarity_score(resume_text, lines, doc)
     
     # 5. GAPS SCORE
-    gaps_score = _calculate_gaps_score(resume_text, job_description)
+    gaps_score = _calculate_gaps_score(resume_text, job_description, action_verb_analysis)
     
     return {
         "relevance": relevance_score,
@@ -330,15 +330,91 @@ def _calculate_clarity_score(resume_text, lines, doc):
     }
 
 
-def _calculate_gaps_score(resume_text, job_description):
+# --- Quality Detection Helpers ---
+
+def _has_quantifiable_metrics(text):
+    """Detect if resume contains quantifiable achievements (numbers, percentages, metrics)."""
+    # Look for patterns like: 30%, $50K, 5 years, 10+ members, increased by 20
+    metric_patterns = [
+        r'\d+%',  # Percentages: 30%, 50%
+        r'\$\d+[KMB]?',  # Money: $50K, $2M
+        r'\d+\+?\s*(years?|months?|people|members|users|clients|customers)',  # Time/people
+        r'(increased|decreased|grew|reduced|improved|saved)\s+(by\s+)?\d+',  # Growth metrics
+        r'\d+x',  # Multipliers: 2x, 10x
+    ]
+    
+    for pattern in metric_patterns:
+        if re.search(pattern, text, re.IGNORECASE):
+            return True
+    return False
+
+
+def _has_bullet_points(text):
+    """Detect if resume uses bullet point formatting."""
+    bullet_patterns = [
+        r'^\s*[•●○◦▪▫‣⁃∙]\s+',  # Unicode bullets
+        r'^\s*[-*]\s+',  # Dash or asterisk bullets
+        r'^\s*\d+\.\s+',  # Numbered lists
+    ]
+    
+    lines = text.split('\n')
+    bullet_count = 0
+    
+    for line in lines:
+        for pattern in bullet_patterns:
+            if re.match(pattern, line):
+                bullet_count += 1
+                break
+    
+    # Consider it bulleted if at least 5 lines use bullets
+    return bullet_count >= 5
+
+
+def _analyze_resume_quality(resume_text, action_verb_analysis):
+    """Generate quality-focused improvement suggestions."""
+    suggestions = []
+    word_count = len(resume_text.split())
+    
+    # 1. Action Verb Quality
+    if action_verb_analysis:
+        impact_ratio = action_verb_analysis.get('impact_verbs_count', 0) / max(action_verb_analysis.get('total_verbs', 1), 1)
+        if impact_ratio < 0.3:  # Less than 30% high-impact verbs
+            suggestions.append("Strengthen your impact by using powerful action verbs like 'Achieved', 'Delivered', 'Led', or 'Optimized'")
+    
+    # 2. Quantifiable Metrics
+    if not _has_quantifiable_metrics(resume_text):
+        suggestions.append("Add quantifiable achievements with specific numbers (e.g., 'Increased sales by 30%', 'Led team of 5', 'Managed $2M budget')")
+    
+    # 3. Bullet Point Formatting
+    if not _has_bullet_points(resume_text):
+        suggestions.append("Improve readability by using consistent bullet points for your accomplishments and responsibilities")
+    
+    # 4. Content Length
+    if word_count < 250:
+        suggestions.append("Expand your experience descriptions - your resume appears brief. Add more details about your key accomplishments")
+    elif word_count > 1000:
+        suggestions.append("Consider condensing your content - aim for concise, impactful statements that highlight your best achievements")
+    
+    # 5. Generic catch-all if no specific issues found
+    if len(suggestions) == 0:
+        suggestions.append("Focus on highlighting measurable achievements and leadership contributions")
+        suggestions.append("Use industry-specific keywords relevant to your target roles")
+    
+    return suggestions[:3]  # Return top 3 suggestions
+
+
+def _calculate_gaps_score(resume_text, job_description, action_verb_analysis=None):
     """Calculate gaps analysis - lower score means fewer gaps (inverse scoring)."""
     if not job_description:
+        # Quality Check Mode: Generate quality-focused suggestions
+        quality_suggestions = _analyze_resume_quality(resume_text, action_verb_analysis)
+        
         return {
             "score": 100,  # No gaps can be identified without job description
             "identified_gaps": [],
             "critical_missing": [],
-            "improvement_suggestions": [],
-            "explanation": "No job description provided for gap analysis"
+            "improvement_suggestions": quality_suggestions,
+            "explanation": "Quality-focused suggestions based on resume analysis"
         }
     
     # Get skill analysis
