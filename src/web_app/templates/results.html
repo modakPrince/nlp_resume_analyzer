@@ -10,15 +10,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>body{font-family:'Inter',sans-serif;}</style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 text-slate-800 dark:text-slate-100 transition-base">
+<body class="min-h-screen bg-gradient-to-br from-sky-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 text-slate-800 dark:text-slate-100 transition-base">
   <div class="max-w-6xl mx-auto px-5 md:px-8 py-10">
     <!-- Header -->
     <div class="flex items-center justify-between mb-10 fade-in">
       <div>
-        <h1 class="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-indigo-300 dark:to-violet-300">Analysis Report</h1>
+        <h1 class="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-sky-500 to-cyan-400 bg-clip-text text-transparent">Analysis Report</h1>
         <p class="mt-2 text-sm md:text-base text-slate-600 dark:text-slate-400 max-w-xl">Semantic relevance, quality signals & keyword coverage extracted from the uploaded resume.</p>
       </div>
       <div class="flex gap-3">
+        <button id="viewToggle" class="btn-outline-tw text-xs md:text-sm flex items-center gap-2">
+          <svg id="viewToggleIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+          <span id="viewToggleText">Simple View</span>
+        </button>
         <button id="themeToggle" class="btn-outline-tw text-xs md:text-sm">Toggle Theme</button>
         <a href="{{ url_for('index') }}" class="btn-primary-tw text-xs md:text-sm">New Analysis</a>
       </div>
@@ -27,12 +33,109 @@
     {% if results %}
       {% set sim_pct = results.similarity_score.replace('%','') %}
       {% set qual_pct = results.quality_score.replace('/100','') %}
+      
+      <!-- SIMPLIFIED VIEW (Hidden by default, shown when toggle is clicked) -->
+      <div id="simpleView" class="hidden">
+        {% if results.has_enhanced_data and results.enhanced_analysis and results.enhanced_analysis.overall_score is not none %}
+          {% set overall_score = results.enhanced_analysis.overall_score %}
+          {% set score_color = 'text-green-600 dark:text-green-400' if overall_score >= 75 else ('text-yellow-600 dark:text-yellow-400' if overall_score >= 50 else 'text-red-600 dark:text-red-400') %}
+          
+          <!-- Overall Score Card -->
+          <section class="mb-8">
+            <div class="card-tw fade-in flex flex-col items-center justify-center text-center relative overflow-hidden">
+              <h2 class="font-semibold text-sm uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-4">Overall Resume Score</h2>
+              <div class="metric-ring mb-4" style="--pct: {{ overall_score }}%">
+                <span>{{ "%.0f"|format(overall_score) }}%</span>
+              </div>
+              <p class="text-sm font-semibold mb-2 {{ score_color }}">
+                {% if overall_score >= 75 %}🎉 Excellent Performance
+                {% elif overall_score >= 50 %}👍 Strong Foundation
+                {% else %}💪 Room for Improvement{% endif %}
+              </p>
+              <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md">
+                {% if overall_score >= 75 %}
+                  Your resume demonstrates exceptional quality and strong alignment. Focus on minor refinements to achieve perfection.
+                {% elif overall_score >= 50 %}
+                  Your resume shows solid promise with good fundamentals. Targeted improvements will strengthen your candidacy.
+                {% else %}
+                  Your resume needs focused attention. The recommendations below will help you improve critical areas.
+                {% endif %}
+              </p>
+              <div class="absolute inset-0 pointer-events-none opacity-[0.07] bg-[radial-gradient(circle_at_50%_50%,#6366f1,transparent_70%)]"></div>
+            </div>
+          </section>
+          
+          <!-- Key Metrics Grid -->
+          <section class="grid md:grid-cols-4 gap-4 mb-8">
+            {% if results.enhanced_analysis.relevance.score is not none %}
+            <div class="card-tw fade-in text-center">
+              <h3 class="font-semibold text-sm mb-2 text-sky-700 dark:text-sky-300">Job Match</h3>
+              <div class="text-3xl font-bold mb-1 text-sky-600 dark:text-sky-400">{{ "%.0f"|format(results.enhanced_analysis.relevance.score) }}%</div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Relevance</p>
+            </div>
+            {% endif %}
+            
+            <div class="card-tw fade-in text-center">
+              <h3 class="font-semibold text-sm mb-2 text-cyan-700 dark:text-cyan-300">Impact</h3>
+              <div class="text-3xl font-bold mb-1 text-cyan-600 dark:text-cyan-400">{{ "%.0f"|format(results.enhanced_analysis.impact.score) }}%</div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Achievement</p>
+            </div>
+            
+            <div class="card-tw fade-in text-center">
+              <h3 class="font-semibold text-sm mb-2 text-cyan-700 dark:text-cyan-300">Structure</h3>
+              <div class="text-3xl font-bold mb-1 text-cyan-600 dark:text-cyan-400">{{ "%.0f"|format(results.enhanced_analysis.structure.score) }}%</div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Organization</p>
+            </div>
+            
+            <div class="card-tw fade-in text-center">
+              <h3 class="font-semibold text-sm mb-2 text-sky-700 dark:text-sky-300">Clarity</h3>
+              <div class="text-3xl font-bold mb-1 text-sky-600 dark:text-sky-400">{{ "%.0f"|format(results.enhanced_analysis.clarity.score) }}%</div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Readability</p>
+            </div>
+          </section>
+          
+          <!-- Top Recommendations -->
+          {% if results.enhanced_analysis.gaps.improvement_suggestions %}
+          <section class="mb-8">
+            <div class="card-tw fade-in">
+              <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4">Priority Improvements</h3>
+              <ul class="space-y-3 mb-6">
+                {% for suggestion in results.enhanced_analysis.gaps.improvement_suggestions[:3] %}
+                <li class="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-300">
+                  <span class="flex-shrink-0 w-6 h-6 rounded-full bg-sky-100 dark:bg-sky-900/40 flex items-center justify-center text-sky-600 dark:text-sky-300 text-xs font-semibold">{{ loop.index }}</span>
+                  <span class="flex-1">{{ suggestion }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+              
+              <div class="text-center border-t border-slate-200 dark:border-slate-700 mb-1">
+                <button id="showDetailedBtn" class="btn-outline-tw hover:bg-slate-100 dark:hover:bg-slate-800">
+                  View Detailed Analysis →
+                </button>
+              </div>
+            </div>
+          </section>
+          {% endif %}
+        {% else %}
+          <div class="max-w-2xl mx-auto">
+            <div class="card-tw fade-in text-center">
+              <svg class="w-16 h-16 mx-auto mb-4 text-slate-400 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+              <p class="text-slate-600 dark:text-slate-400">Enhanced scoring not available. Please analyze a resume with a job description for complete metrics.</p>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      
+      <!-- DETAILED VIEW (Shown by default) -->
+      <div id="detailedView">
       <!-- Top Summary Cards -->
       <section class="grid md:grid-cols-3 gap-8 mb-10">
         <!-- Candidate Info -->
         <div class="card-tw fade-in flex flex-col justify-between">
           <div>
-            <h2 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xs">A</span> Candidate</h2>
+            <h2 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-sky-100 dark:bg-sky-900/40 flex items-center justify-center text-sky-600 dark:text-sky-300 text-xs">A</span> Candidate</h2>
             <ul class="space-y-1 text-sm">
               <li><span class="text-slate-500 dark:text-slate-400">Name:</span> {{ results.name or 'N/A' }}</li>
               <li><span class="text-slate-500 dark:text-slate-400">Email:</span> {{ results.email or 'N/A' }}</li>
@@ -183,7 +286,7 @@
       <section class="grid md:grid-cols-2 gap-8 mb-12">
         <!-- Matched Skills -->
         <div class="card-tw fade-in">
-          <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xs">B</span> Matched Keywords</h3>
+          <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-sky-100 dark:bg-sky-900/40 flex items-center justify-center text-sky-600 dark:text-sky-300 text-xs">B</span> Matched Keywords</h3>
           {% if results.matched_keywords %}
             <div class="flex flex-wrap">
               {% for skill in results.matched_keywords %}
@@ -196,7 +299,7 @@
         </div>
         <!-- Missing Skills -->
         <div class="card-tw fade-in">
-          <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xs">C</span> Suggested Additions</h3>
+          <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-sky-100 dark:bg-sky-900/40 flex items-center justify-center text-sky-600 dark:text-sky-300 text-xs">C</span> Suggested Additions</h3>
           {% if results.missing_keywords %}
             <p class="text-xs mb-3 text-slate-500 dark:text-slate-500">Consider incorporating these relevant terms naturally:</p>
             <div class="flex flex-wrap">
@@ -213,7 +316,7 @@
       <!-- Action Verb Analysis -->
       {% if results.action_verb_analysis %}
       <section class="card-tw fade-in mb-12">
-        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xs">D</span> Action Verb Analysis</h3>
+        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-sky-100 dark:bg-sky-900/40 flex items-center justify-center text-sky-600 dark:text-sky-300 text-xs">D</span> Action Verb Analysis</h3>
         
         <!-- Verb Tier Summary -->
         <div class="grid md:grid-cols-3 gap-4 mb-6">
@@ -281,7 +384,9 @@
 
       <!-- Dynamic Recommendations Section -->
       <section class="card-tw fade-in mb-14">
-        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xs">E</span> Personalized Recommendations</h3>
+              <!-- Personalized Recommendations -->
+      <section class="card-tw fade-in mb-12">
+        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-sky-100 dark:bg-sky-900/40 flex items-center justify-center text-sky-600 dark:text-sky-300 text-xs">E</span> Personalized Recommendations</h3>
         
         {% if results.has_enhanced_data and results.enhanced_analysis %}
         <!-- Dynamic recommendations based on scores -->
@@ -376,6 +481,7 @@
         </ul>
         {% endif %}
       </section>
+      </div> <!-- End of detailedView -->
     {% else %}
       <p class="text-slate-600 dark:text-slate-400">No results to display.</p>
     {% endif %}
@@ -387,9 +493,69 @@
   </div>
 
   <script>
-    const root = document.documentElement; const btn = document.getElementById('themeToggle');
-    (function(){ const saved = localStorage.getItem('theme'); if(saved==='dark'){ root.classList.add('dark'); } })();
-    if(btn){ btn.addEventListener('click',()=>{ const d = root.classList.toggle('dark'); localStorage.setItem('theme', d? 'dark':'light'); }); }
+    // Theme toggle
+    const root = document.documentElement; 
+    const themeBtn = document.getElementById('themeToggle');
+    (function(){ 
+      const saved = localStorage.getItem('theme'); 
+      if(saved==='dark'){ 
+        root.classList.add('dark'); 
+      } 
+    })();
+    if(themeBtn){ 
+      themeBtn.addEventListener('click',()=>{ 
+        const d = root.classList.toggle('dark'); 
+        localStorage.setItem('theme', d? 'dark':'light'); 
+      }); 
+    }
+
+    // View toggle between simple and detailed
+    const viewToggleBtn = document.getElementById('viewToggle');
+    const viewToggleText = document.getElementById('viewToggleText');
+    const viewToggleIcon = document.getElementById('viewToggleIcon');
+    const simpleView = document.getElementById('simpleView');
+    const detailedView = document.getElementById('detailedView');
+    const showDetailedBtn = document.getElementById('showDetailedBtn');
+    
+    // Load saved view preference
+    const savedView = localStorage.getItem('analysisView') || 'detailed';
+    
+    function switchToView(view) {
+      if (view === 'simple') {
+        simpleView.classList.remove('hidden');
+        detailedView.classList.add('hidden');
+        viewToggleText.textContent = 'Detailed View';
+        // Change icon to grid for detailed view
+        viewToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>';
+        localStorage.setItem('analysisView', 'simple');
+      } else {
+        simpleView.classList.add('hidden');
+        detailedView.classList.remove('hidden');
+        viewToggleText.textContent = 'Simple View';
+        // Change icon to single chart for simple view
+        viewToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>';
+        localStorage.setItem('analysisView', 'detailed');
+      }
+    }
+    
+    // Initialize with saved preference
+    switchToView(savedView);
+    
+    // Toggle button handler
+    if (viewToggleBtn) {
+      viewToggleBtn.addEventListener('click', () => {
+        const currentView = localStorage.getItem('analysisView') || 'detailed';
+        switchToView(currentView === 'simple' ? 'detailed' : 'simple');
+      });
+    }
+    
+    // Show detailed button handler (from simple view)
+    if (showDetailedBtn) {
+      showDetailedBtn.addEventListener('click', () => {
+        switchToView('detailed');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
   </script>
 </body>
 </html>
