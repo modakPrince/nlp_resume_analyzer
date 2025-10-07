@@ -1,0 +1,357 @@
+================================================================================
+              SIMPLIFIED UML DIAGRAMS - NLP RESUME ANALYZER SYSTEM
+================================================================================
+
+This document contains simplified, compact UML diagrams optimized for visibility
+in documentation and reports.
+
+To view these diagrams:
+1. Copy the mermaid code blocks
+2. Paste into: https://mermaid.live/
+3. Export as PNG/SVG for your document
+
+================================================================================
+
+
+1. SIMPLE CLASS DIAGRAM - CORE SYSTEM COMPONENTS
+================================================================================
+
+```mermaid
+classDiagram
+    class FlaskApp {
+        +analyze_resume()
+        +view_history()
+        +export_data()
+    }
+
+    class ResumeParser {
+        +extract_text()
+        +extract_skills()
+        +extract_contact()
+    }
+
+    class ResumeAnalyzer {
+        +calculate_similarity()
+        +get_quality_score()
+        +analyze_keywords()
+    }
+
+    class Analysis {
+        +id
+        +filename
+        +upload_date
+        +scores
+        +results_json
+    }
+
+    class ConfigLoader {
+        +load_skills()
+        +load_action_verbs()
+    }
+
+    FlaskApp --> ResumeParser
+    FlaskApp --> ResumeAnalyzer
+    FlaskApp --> Analysis
+    ResumeAnalyzer --> ConfigLoader
+    ResumeParser --> ConfigLoader
+```
+
+
+================================================================================
+
+
+2. SEQUENCE DIAGRAM - RESUME UPLOAD FLOW
+================================================================================
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Flask
+    participant Parser
+    participant Analyzer
+    participant Database
+
+    User->>Flask: Upload Resume + Job Description
+    Flask->>Parser: Extract Text
+    Parser-->>Flask: Resume Text
+    Flask->>Parser: Extract Contact Info
+    Parser-->>Flask: Name, Email, Phone
+    Flask->>Parser: Extract Skills
+    Parser-->>Flask: Skills List
+    Flask->>Analyzer: Analyze Resume
+    Analyzer->>Analyzer: Calculate Scores
+    Analyzer-->>Flask: Analysis Results
+    Flask->>Database: Save Analysis
+    Database-->>Flask: Saved
+    Flask-->>User: Display Results
+```
+
+
+================================================================================
+
+
+3. DATA FLOW DIAGRAM - LEVEL 0 (CONTEXT)
+================================================================================
+
+```mermaid
+flowchart LR
+    User([User])
+    System[Resume Analyzer<br/>System]
+    DB[(Database)]
+    
+    User -->|Resume + JD| System
+    System -->|Analysis Results| User
+    System -->|Store Data| DB
+    DB -->|History| User
+```
+
+
+================================================================================
+
+
+4. DATA FLOW DIAGRAM - LEVEL 1 (PROCESS BREAKDOWN)
+================================================================================
+
+```mermaid
+flowchart TB
+    User([User])
+    
+    P1[1. Upload Handler]
+    P2[2. Text Extraction]
+    P3[3. NLP Processing]
+    P4[4. Analysis Engine]
+    P5[5. Score Calculator]
+    P6[6. Data Storage]
+    
+    D1[(Resume Files)]
+    D2[(Skills DB)]
+    D3[(Analysis DB)]
+    
+    User -->|Upload| P1
+    P1 --> D1
+    D1 --> P2
+    P2 --> P3
+    P3 --> D2
+    P3 --> P4
+    P4 --> P5
+    P5 --> P6
+    P6 --> D3
+    D3 --> User
+```
+
+
+================================================================================
+
+
+5. ACTIVITY DIAGRAM - RESUME ANALYSIS WORKFLOW
+================================================================================
+
+```mermaid
+flowchart TD
+    Start([Start]) --> Upload[Upload Resume]
+    Upload --> Mode{Mode?}
+    
+    Mode -->|Quality Check| ParseResume[Parse Resume]
+    Mode -->|Full Analysis| AddJD[Add Job Description]
+    
+    AddJD --> ParseResume
+    ParseResume --> Extract[Extract Skills & Info]
+    Extract --> Analyze[Analyze Content]
+    
+    Analyze --> Calculate[Calculate Scores]
+    Calculate --> Save[Save to Database]
+    Save --> Display[Display Results]
+    Display --> End([End])
+```
+
+
+================================================================================
+
+
+6. ACTIVITY DIAGRAM - HISTORY PAGE WORKFLOW
+================================================================================
+
+```mermaid
+flowchart TD
+    Start([User Opens History]) --> Load[Load All Analyses]
+    Load --> Display[Display Table]
+    
+    Display --> Action{User Action?}
+    
+    Action -->|Filter| ApplyFilter[Apply Filters]
+    ApplyFilter --> Display
+    
+    Action -->|Search| SearchText[Search by Text]
+    SearchText --> Display
+    
+    Action -->|View| ViewAnalysis[View Details]
+    ViewAnalysis --> Display
+    
+    Action -->|Export CSV| ExportCSV[Download CSV]
+    ExportCSV --> Display
+    
+    Action -->|Export JSON| ExportJSON[Download JSON]
+    ExportJSON --> Display
+    
+    Action -->|Delete| DeleteRecord[Delete Analysis]
+    DeleteRecord --> Display
+    
+    Action -->|Exit| End([End])
+```
+
+
+================================================================================
+
+
+7. ACTIVITY DIAGRAM - NLP PROCESSING WORKFLOW
+================================================================================
+
+```mermaid
+flowchart TD
+    Start([Receive Text]) --> Clean[Clean Text]
+    Clean --> Tokenize[Tokenize]
+    
+    Tokenize --> ExtractSkills[Extract Skills]
+    Tokenize --> ExtractVerbs[Extract Action Verbs]
+    Tokenize --> ExtractContact[Extract Contact Info]
+    
+    ExtractSkills --> Match[Match with Database]
+    ExtractVerbs --> Categorize[Categorize Verbs]
+    
+    Match --> Calculate[Calculate Scores]
+    Categorize --> Calculate
+    ExtractContact --> Calculate
+    
+    Calculate --> Format[Format Results]
+    Format --> End([Return Results])
+```
+
+
+================================================================================
+
+
+8. ACTIVITY DIAGRAM - SCORING ALGORITHM
+================================================================================
+
+```mermaid
+flowchart TD
+    Start([Start Scoring]) --> CheckMode{Mode?}
+    
+    CheckMode -->|Quality Only| QualityScores[Calculate Quality Metrics]
+    CheckMode -->|Full Analysis| AllScores[Calculate All Metrics]
+    
+    QualityScores --> Structure[Structure Score]
+    QualityScores --> Clarity[Clarity Score]
+    QualityScores --> Impact[Impact Score]
+    
+    AllScores --> Structure
+    AllScores --> Clarity
+    AllScores --> Impact
+    AllScores --> Relevance[Relevance Score]
+    AllScores --> Match[Job Match Score]
+    
+    Structure --> Combine[Combine Scores]
+    Clarity --> Combine
+    Impact --> Combine
+    Relevance --> Combine
+    Match --> Combine
+    
+    Combine --> Overall[Calculate Overall Score]
+    Overall --> End([Return Scores])
+```
+
+
+================================================================================
+
+
+9. ACTIVITY DIAGRAM - EXPORT DATA WORKFLOW
+================================================================================
+
+```mermaid
+flowchart TD
+    Start([Export Request]) --> Type{Export Type?}
+    
+    Type -->|CSV Bulk| GetFilters[Get Current Filters]
+    Type -->|JSON Single| GetID[Get Analysis ID]
+    
+    GetFilters --> QueryDB1[Query Database]
+    GetID --> QueryDB2[Query Single Record]
+    
+    QueryDB1 --> CreateCSV[Create CSV Format]
+    QueryDB2 --> CreateJSON[Create JSON Format]
+    
+    CreateCSV --> AddHeader[Add Header Row]
+    AddHeader --> AddRows[Add Data Rows]
+    
+    CreateJSON --> FormatJSON[Format JSON]
+    
+    AddRows --> Generate1[Generate Filename]
+    FormatJSON --> Generate2[Generate Filename]
+    
+    Generate1 --> Download[Download File]
+    Generate2 --> Download
+    
+    Download --> End([End])
+```
+
+
+================================================================================
+
+
+10. SIMPLE DATA FLOW - COMPLETE SYSTEM
+================================================================================
+
+```mermaid
+flowchart LR
+    subgraph Input
+        A[Resume File]
+        B[Job Description]
+    end
+    
+    subgraph Processing
+        C[Text Extraction]
+        D[NLP Analysis]
+        E[Scoring Engine]
+    end
+    
+    subgraph Output
+        F[Results Display]
+        G[Database Storage]
+        H[Export Files]
+    end
+    
+    A --> C
+    B --> D
+    C --> D
+    D --> E
+    E --> F
+    E --> G
+    G --> H
+```
+
+
+================================================================================
+                            END OF SIMPLIFIED DIAGRAMS
+================================================================================
+
+DIAGRAM SUMMARY:
+
+1. Class Diagram: Shows 5 core components and their relationships
+2. Sequence Diagram: 8-step user upload flow
+3. Data Flow Level 0: High-level context diagram (3 components)
+4. Data Flow Level 1: Process breakdown (6 processes)
+5. Activity - Analysis: Main resume analysis workflow
+6. Activity - History: User interactions with history page
+7. Activity - NLP: NLP processing pipeline
+8. Activity - Scoring: Score calculation workflow
+9. Activity - Export: Data export process
+10. Data Flow - System: Complete end-to-end flow
+
+These diagrams are:
+✓ Compact and readable
+✓ Focused on core functionality
+✓ Optimized for document visibility
+✓ Easy to understand at a glance
+✓ Perfect for reports and presentations
+
+================================================================================

@@ -1,0 +1,1094 @@
+================================================================================
+                    UML DIAGRAMS - NLP RESUME ANALYZER SYSTEM
+================================================================================
+
+This document contains various UML diagrams created using Mermaid syntax to
+visualize the architecture, workflow, and components of the NLP Resume
+Analyzer system.
+
+To view these diagrams:
+1. Copy the mermaid code blocks
+2. Paste into: https://mermaid.live/
+3. Or use VS Code with Mermaid extension
+4. Or use any Markdown viewer that supports Mermaid
+
+================================================================================
+
+
+1. CLASS DIAGRAM - COMPLETE SYSTEM ARCHITECTURE
+================================================================================
+
+```mermaid
+classDiagram
+    %% Flask Web Application Layer
+    class FlaskApp {
+        +String SECRET_KEY
+        +String UPLOAD_FOLDER
+        +String DATABASE_URI
+        +index() Response
+        +analyze_resume() Response
+        +skills_explorer() Response
+        +history() Response
+        +view_analysis(id) Response
+        +delete_analysis(id) Response
+        +export_csv() Response
+        +export_single_json(id) Response
+    }
+
+    %% Database Models
+    class Analysis {
+        +Integer id
+        +String filename
+        +DateTime upload_date
+        +String extracted_name
+        +String extracted_email
+        +String extracted_phone
+        +String mode
+        +Float quality_score
+        +Float job_match_score
+        +Float impact_score
+        +Float structure_score
+        +Float overall_score
+        +Text results_json
+        +String resume_preview
+        +Integer skills_count
+        +Integer matched_keywords_count
+        +Integer missing_keywords_count
+        +get_results() Dict
+        +to_dict() Dict
+        +get_statistics() Dict
+    }
+
+    %% NLP Engine - Parser Module
+    class ResumeParser {
+        +extract_text_from_pdf(path) String
+        +extract_name(text) String
+        +extract_email(text) String
+        +extract_phone_number(text) String
+        +extract_skills(text) List
+        +extract_action_verbs(text) Dict
+        +extract_education(text) List
+        +extract_experience(text) List
+    }
+
+    %% NLP Engine - Analyzer Module
+    class ResumeAnalyzer {
+        +calculate_similarity(resume, jd) Float
+        +get_resume_quality_score(text) Dict
+        +get_enhanced_resume_score(text, jd, legacy) Dict
+        +analyze_keywords(skills, jd) Tuple
+        +analyze_gaps(resume, jd, action_verbs) Dict
+        -_calculate_structured_metrics(text, jd) Dict
+        -_calculate_relevance_score(text, jd, doc) Dict
+        -_calculate_impact_score(text, verbs, lines, doc) Dict
+        -_calculate_structure_score(text, lines, doc) Dict
+        -_calculate_clarity_score(text, lines, doc) Dict
+        -_calculate_gaps_score(text, jd, verbs) Dict
+        -_generate_quality_suggestions(text, verbs) List
+        -_has_quantifiable_metrics(text) Boolean
+        -_count_bullet_points(text) Integer
+    }
+
+    %% Configuration Management
+    class ConfigLoader {
+        -Dict _skills_cache
+        -Dict _action_verbs_cache
+        +load_skills() Dict
+        +load_action_verbs() Dict
+        +get_all_skills_flat() List
+        +get_skills_by_category(category) List
+        +get_action_verb_categories() List
+    }
+
+    %% NLP Models
+    class NLPModels {
+        -SentenceTransformer model
+        -spacy.Language nlp
+        +get_embedding_model() SentenceTransformer
+        +get_nlp_model() spacy.Language
+        +encode_text(text) Vector
+        +process_text(text) Doc
+    }
+
+    %% Skills Taxonomy
+    class SkillsTaxonomy {
+        +Dict programming_languages
+        +Dict web_frameworks
+        +Dict data_science_libraries
+        +Dict cloud_platforms
+        +Dict devops_tools
+        +Dict databases
+        +Dict project_management
+        +match_skills(text) List
+        +get_category(skill) String
+    }
+
+    %% Action Verbs Database
+    class ActionVerbsDB {
+        +Dict leadership
+        +Dict technical
+        +Dict analytical
+        +Dict creative
+        +Dict communication
+        +categorize_verb(verb) String
+        +get_verb_strength(verb) Integer
+    }
+
+    %% Results Processor
+    class ResultsProcessor {
+        +format_for_display(results) Dict
+        +calculate_overall_score(components) Float
+        +generate_recommendations(gaps) List
+        +create_visualization_data(scores) Dict
+    }
+
+    %% File Handler
+    class FileHandler {
+        +save_uploaded_file(file) String
+        +delete_file(path) Boolean
+        +validate_file_type(file) Boolean
+        +get_file_size(file) Integer
+    }
+
+    %% Database Manager
+    class DatabaseManager {
+        +SQLAlchemy db
+        +create_all() None
+        +save_analysis(data) Analysis
+        +get_analysis(id) Analysis
+        +get_all_analyses(filters) List
+        +delete_analysis(id) Boolean
+        +search_analyses(query) List
+    }
+
+    %% Export Manager
+    class ExportManager {
+        +export_to_csv(analyses) String
+        +export_to_json(analysis) String
+        +generate_filename(type, timestamp) String
+    }
+
+    %% Relationships
+    FlaskApp --> ResumeParser : uses
+    FlaskApp --> ResumeAnalyzer : uses
+    FlaskApp --> DatabaseManager : manages
+    FlaskApp --> ExportManager : exports data
+    FlaskApp --> FileHandler : handles uploads
+    
+    ResumeParser --> NLPModels : uses
+    ResumeParser --> SkillsTaxonomy : matches against
+    ResumeParser --> ActionVerbsDB : extracts from
+    
+    ResumeAnalyzer --> NLPModels : uses
+    ResumeAnalyzer --> ConfigLoader : loads config
+    ResumeAnalyzer --> ResultsProcessor : formats results
+    
+    DatabaseManager --> Analysis : manages
+    Analysis --> ResultsProcessor : transforms data
+    
+    ConfigLoader --> SkillsTaxonomy : loads
+    ConfigLoader --> ActionVerbsDB : loads
+    
+    ExportManager --> Analysis : exports
+```
+
+
+================================================================================
+
+
+2. SEQUENCE DIAGRAM - USER RESUME UPLOAD AND ANALYSIS FLOW
+================================================================================
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Browser
+    participant FlaskApp
+    participant FileHandler
+    participant ResumeParser
+    participant ResumeAnalyzer
+    participant NLPModels
+    participant DatabaseManager
+    participant Database
+
+    User->>Browser: Upload resume & job description
+    Browser->>FlaskApp: POST /analyze (files & form data)
+    
+    FlaskApp->>FlaskApp: Validate request
+    FlaskApp->>FileHandler: save_uploaded_file(resume)
+    FileHandler->>FileHandler: Generate unique filename
+    FileHandler-->>FlaskApp: File path
+    
+    FlaskApp->>ResumeParser: extract_text_from_pdf(path)
+    ResumeParser->>ResumeParser: Parse PDF/DOCX
+    ResumeParser-->>FlaskApp: Resume text
+    
+    FlaskApp->>ResumeParser: extract_name(text)
+    ResumeParser-->>FlaskApp: Name
+    
+    FlaskApp->>ResumeParser: extract_email(text)
+    ResumeParser-->>FlaskApp: Email
+    
+    FlaskApp->>ResumeParser: extract_phone_number(text)
+    ResumeParser-->>FlaskApp: Phone
+    
+    FlaskApp->>ResumeParser: extract_skills(text)
+    ResumeParser->>NLPModels: process_text(text)
+    NLPModels-->>ResumeParser: Parsed doc
+    ResumeParser-->>FlaskApp: Skills list
+    
+    FlaskApp->>ResumeAnalyzer: get_enhanced_resume_score(text, jd)
+    ResumeAnalyzer->>NLPModels: encode_text(resume)
+    NLPModels-->>ResumeAnalyzer: Resume embedding
+    ResumeAnalyzer->>NLPModels: encode_text(jd)
+    NLPModels-->>ResumeAnalyzer: JD embedding
+    
+    ResumeAnalyzer->>ResumeAnalyzer: calculate_relevance_score()
+    ResumeAnalyzer->>ResumeAnalyzer: calculate_impact_score()
+    ResumeAnalyzer->>ResumeAnalyzer: calculate_structure_score()
+    ResumeAnalyzer->>ResumeAnalyzer: calculate_clarity_score()
+    ResumeAnalyzer->>ResumeAnalyzer: calculate_gaps_score()
+    ResumeAnalyzer-->>FlaskApp: Enhanced analysis results
+    
+    FlaskApp->>DatabaseManager: save_analysis(results)
+    DatabaseManager->>Database: INSERT analysis record
+    Database-->>DatabaseManager: Analysis ID
+    DatabaseManager-->>FlaskApp: Saved successfully
+    
+    FlaskApp->>FileHandler: delete_file(temp_path)
+    FileHandler-->>FlaskApp: File deleted
+    
+    FlaskApp-->>Browser: Render results.html
+    Browser-->>User: Display analysis results
+```
+
+
+================================================================================
+
+
+3. ACTIVITY DIAGRAM - RESUME ANALYSIS WORKFLOW
+================================================================================
+
+```mermaid
+flowchart TD
+    Start([User Visits Application]) --> UploadPage[Display Upload Page]
+    UploadPage --> CheckMode{Quality Check<br/>Mode?}
+    
+    CheckMode -->|Yes| UploadResume[Upload Resume Only]
+    CheckMode -->|No| UploadBoth[Upload Resume & Job Description]
+    
+    UploadResume --> ValidateFile{Valid File<br/>Format?}
+    UploadBoth --> ValidateFile
+    
+    ValidateFile -->|No| ShowError[Show Error Message]
+    ShowError --> UploadPage
+    
+    ValidateFile -->|Yes| SaveFile[Save File Temporarily]
+    SaveFile --> ExtractText[Extract Text from PDF/DOCX]
+    
+    ExtractText --> ParseContact[Extract Contact Information]
+    ParseContact --> ExtractSkills[Extract Skills Using NLP]
+    ExtractSkills --> ExtractVerbs[Extract Action Verbs]
+    
+    ExtractVerbs --> CheckJD{Job Description<br/>Provided?}
+    
+    CheckJD -->|Yes| CalculateRelevance[Calculate Semantic Similarity]
+    CalculateRelevance --> MatchKeywords[Match Keywords with JD]
+    MatchKeywords --> IdentifyGaps[Identify Missing Skills]
+    IdentifyGaps --> CalculateAllScores[Calculate All Metrics]
+    
+    CheckJD -->|No| CalculateQuality[Calculate Quality Metrics Only]
+    CalculateQuality --> GenerateSuggestions[Generate Quality Suggestions]
+    GenerateSuggestions --> CalculateAllScores
+    
+    CalculateAllScores --> ImpactScore[Calculate Impact Score]
+    ImpactScore --> StructureScore[Calculate Structure Score]
+    StructureScore --> ClarityScore[Calculate Clarity Score]
+    ClarityScore --> OverallScore[Calculate Overall Score]
+    
+    OverallScore --> FormatResults[Format Results for Display]
+    FormatResults --> SaveToDatabase[Save Analysis to Database]
+    
+    SaveToDatabase --> CleanupFiles[Delete Temporary Files]
+    CleanupFiles --> DisplayResults[Display Results Page]
+    
+    DisplayResults --> UserAction{User Action?}
+    
+    UserAction -->|View History| HistoryPage[Show History Page]
+    UserAction -->|Export Data| ExportData[Export as CSV/JSON]
+    UserAction -->|New Analysis| UploadPage
+    UserAction -->|Exit| End([End])
+    
+    HistoryPage --> UserAction
+    ExportData --> UserAction
+```
+
+
+================================================================================
+
+
+4. STATE DIAGRAM - APPLICATION STATE TRANSITIONS
+================================================================================
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: Application Start
+    
+    Idle --> FileSelection: User clicks upload
+    FileSelection --> Idle: Cancel
+    FileSelection --> ModeSelection: File selected
+    
+    ModeSelection --> QualityMode: Quality Check selected
+    ModeSelection --> FullAnalysis: Job Description provided
+    
+    QualityMode --> Validating: Submit
+    FullAnalysis --> Validating: Submit
+    
+    Validating --> Error: Invalid file/format
+    Error --> FileSelection: Retry
+    
+    Validating --> Processing: Valid input
+    
+    Processing --> TextExtraction: Start analysis
+    TextExtraction --> NLPProcessing: Text extracted
+    NLPProcessing --> SkillsMatching: NLP complete
+    SkillsMatching --> ScoreCalculation: Skills extracted
+    ScoreCalculation --> DatabaseSaving: Scores calculated
+    DatabaseSaving --> ResultsReady: Data saved
+    
+    ResultsReady --> DisplayingResults: Render page
+    DisplayingResults --> ResultsViewed: User viewing
+    
+    ResultsViewed --> Idle: New analysis
+    ResultsViewed --> HistoryView: View history
+    ResultsViewed --> ExportingData: Export clicked
+    
+    HistoryView --> FilteringHistory: Apply filters
+    FilteringHistory --> HistoryView: Filters applied
+    HistoryView --> ViewingSingleAnalysis: View analysis
+    ViewingSingleAnalysis --> HistoryView: Back
+    ViewingSingleAnalysis --> DeletingAnalysis: Delete
+    DeletingAnalysis --> HistoryView: Deleted
+    
+    HistoryView --> Idle: Home
+    
+    ExportingData --> DownloadingCSV: CSV selected
+    ExportingData --> DownloadingJSON: JSON selected
+    DownloadingCSV --> ResultsViewed: Download complete
+    DownloadingJSON --> ResultsViewed: Download complete
+    
+    ResultsViewed --> [*]: Exit
+    Idle --> [*]: Close application
+```
+
+
+================================================================================
+
+
+5. COMPONENT DIAGRAM - SYSTEM ARCHITECTURE
+================================================================================
+
+```mermaid
+graph TB
+    subgraph "Presentation Layer"
+        A[Web Browser] --> B[HTML/CSS/JavaScript]
+        B --> C[Jinja2 Templates]
+        C --> D[Tailwind CSS Styling]
+    end
+    
+    subgraph "Application Layer"
+        E[Flask Web Framework]
+        E --> F[Route Controllers]
+        F --> G[Request Handlers]
+        F --> H[Response Formatters]
+        F --> I[Session Manager]
+    end
+    
+    subgraph "Business Logic Layer"
+        J[Resume Parser Module]
+        K[Analysis Engine Module]
+        L[Scoring Algorithm Module]
+        M[Configuration Manager]
+        
+        J --> N[Text Extraction]
+        J --> O[Entity Recognition]
+        
+        K --> P[Semantic Analysis]
+        K --> Q[Keyword Matching]
+        
+        L --> R[Quality Scorer]
+        L --> S[Relevance Scorer]
+        L --> T[Impact Scorer]
+    end
+    
+    subgraph "NLP Services Layer"
+        U[Spacy NLP Engine]
+        V[Sentence Transformers]
+        W[BERT Model]
+        X[TextStat Library]
+    end
+    
+    subgraph "Data Layer"
+        Y[SQLite Database]
+        Z[SQLAlchemy ORM]
+        AA[Database Models]
+        AB[Skills Taxonomy YAML]
+        AC[Action Verbs YAML]
+    end
+    
+    subgraph "Utility Layer"
+        AD[File Handler]
+        AE[Export Manager]
+        AF[Logger]
+        AG[Error Handler]
+    end
+    
+    %% Connections
+    C --> E
+    E --> J
+    E --> K
+    E --> Z
+    E --> AD
+    E --> AE
+    
+    J --> U
+    J --> M
+    
+    K --> V
+    K --> W
+    K --> U
+    K --> X
+    
+    L --> K
+    
+    M --> AB
+    M --> AC
+    
+    Z --> Y
+    Z --> AA
+    
+    F --> AG
+    F --> AF
+    
+    style A fill:#e1f5ff
+    style E fill:#fff4e1
+    style J fill:#ffe1f5
+    style U fill:#e1ffe1
+    style Y fill:#f5e1ff
+```
+
+
+================================================================================
+
+
+6. DEPLOYMENT DIAGRAM - SYSTEM DEPLOYMENT VIEW
+================================================================================
+
+```mermaid
+graph TB
+    subgraph "User Device"
+        A[Web Browser<br/>Chrome/Firefox/Edge]
+        A1[Local Storage<br/>Theme Preferences]
+    end
+    
+    subgraph "Application Server - localhost:8080"
+        B[Flask Application Server]
+        B1[Python 3.13 Runtime]
+        B2[Virtual Environment<br/>venv/]
+        
+        B --> B1
+        B1 --> B2
+    end
+    
+    subgraph "Application Components"
+        C[Web Application Layer<br/>src/web_app/]
+        D[NLP Engine Layer<br/>src/nlp_engine/]
+        E[Static Assets<br/>CSS/JS]
+        F[Templates<br/>HTML/Jinja2]
+    end
+    
+    subgraph "Data Storage"
+        G[SQLite Database<br/>data/resume_analyzer.db]
+        H[Configuration Files<br/>config/*.yaml]
+        I[Uploaded Files<br/>uploads/]
+        J[NLP Models Cache<br/>~/.cache/]
+    end
+    
+    subgraph "External Dependencies"
+        K[Spacy Models<br/>en_core_web_sm]
+        L[Sentence Transformers<br/>all-MiniLM-L6-v2]
+        M[BERT Model<br/>Hugging Face]
+    end
+    
+    A -->|HTTP Requests| B
+    B -->|HTTP Responses| A
+    A -->|Stores| A1
+    
+    B --> C
+    B --> D
+    B --> E
+    B --> F
+    
+    C --> G
+    C --> I
+    D --> H
+    D --> J
+    
+    D -->|Loads| K
+    D -->|Loads| L
+    D -->|Loads| M
+    
+    style A fill:#e3f2fd
+    style B fill:#fff3e0
+    style G fill:#f3e5f5
+    style K fill:#e8f5e9
+```
+
+
+================================================================================
+
+
+7. DATA FLOW DIAGRAM - LEVEL 0 (CONTEXT DIAGRAM)
+================================================================================
+
+```mermaid
+flowchart LR
+    User([User/Job Seeker])
+    
+    subgraph System["NLP Resume Analyzer System"]
+        Core[Resume Analysis Engine]
+    end
+    
+    ResumeFiles[(Resume Files<br/>PDF/DOCX)]
+    JobDesc[(Job Descriptions)]
+    Database[(Analysis Database)]
+    ExportFiles[(Export Files<br/>CSV/JSON)]
+    
+    User -->|Uploads Resume| ResumeFiles
+    User -->|Provides Job Description| JobDesc
+    
+    ResumeFiles -->|Resume File| Core
+    JobDesc -->|JD Text| Core
+    
+    Core -->|Analysis Results| User
+    Core -->|Stores Data| Database
+    Core -->|Generates Export| ExportFiles
+    
+    Database -->|Historical Data| User
+    ExportFiles -->|Downloads| User
+    
+    style User fill:#e3f2fd
+    style Core fill:#fff3e0
+    style Database fill:#f3e5f5
+```
+
+
+================================================================================
+
+
+8. DATA FLOW DIAGRAM - LEVEL 1 (DETAILED PROCESSES)
+================================================================================
+
+```mermaid
+flowchart TB
+    User([User])
+    
+    subgraph InputProcessing["1.0 Input Processing"]
+        P1[1.1 File Upload Handler]
+        P2[1.2 Text Extraction]
+        P3[1.3 Input Validation]
+    end
+    
+    subgraph NLPProcessing["2.0 NLP Processing"]
+        P4[2.1 Text Parsing]
+        P5[2.2 Entity Recognition]
+        P6[2.3 Skills Extraction]
+        P7[2.4 Action Verb Detection]
+    end
+    
+    subgraph AnalysisEngine["3.0 Analysis Engine"]
+        P8[3.1 Semantic Similarity]
+        P9[3.2 Keyword Matching]
+        P10[3.3 Quality Assessment]
+        P11[3.4 Gap Analysis]
+    end
+    
+    subgraph ScoringSystem["4.0 Scoring System"]
+        P12[4.1 Relevance Score]
+        P13[4.2 Impact Score]
+        P14[4.3 Structure Score]
+        P15[4.4 Clarity Score]
+        P16[4.5 Overall Score]
+    end
+    
+    subgraph DataManagement["5.0 Data Management"]
+        P17[5.1 Database Storage]
+        P18[5.2 History Management]
+        P19[5.3 Export Handler]
+    end
+    
+    subgraph Presentation["6.0 Presentation"]
+        P20[6.1 Results Formatter]
+        P21[6.2 Visualization Generator]
+        P22[6.3 UI Renderer]
+    end
+    
+    D1[(Resume Files)]
+    D2[(Job Descriptions)]
+    D3[(Skills Database)]
+    D4[(Action Verbs DB)]
+    D5[(Analysis Database)]
+    D6[(NLP Models)]
+    
+    User -->|Upload| P1
+    P1 --> D1
+    D1 --> P2
+    P2 --> P3
+    P3 --> P4
+    
+    User -->|JD Text| P4
+    
+    P4 --> P5
+    P5 --> P6
+    P5 --> P7
+    
+    P6 --> D3
+    P7 --> D4
+    
+    D3 --> P8
+    P6 --> P9
+    D2 --> P9
+    
+    P8 --> P10
+    P9 --> P11
+    
+    P10 --> P12
+    P10 --> P13
+    P10 --> P14
+    P10 --> P15
+    
+    P11 --> P12
+    
+    P12 --> P16
+    P13 --> P16
+    P14 --> P16
+    P15 --> P16
+    
+    P16 --> P17
+    P17 --> D5
+    
+    D5 --> P18
+    P18 --> P19
+    
+    P16 --> P20
+    P20 --> P21
+    P21 --> P22
+    
+    P22 --> User
+    P19 --> User
+    
+    D6 -.->|Model Loading| P4
+    D6 -.->|Embeddings| P8
+```
+
+
+================================================================================
+
+
+9. ENTITY RELATIONSHIP DIAGRAM - DATABASE SCHEMA
+================================================================================
+
+```mermaid
+erDiagram
+    ANALYSIS {
+        int id PK "Primary Key, Auto-increment"
+        varchar filename "Original resume filename"
+        datetime upload_date "Timestamp of analysis"
+        varchar extracted_name "Candidate name"
+        varchar extracted_email "Email address"
+        varchar extracted_phone "Phone number"
+        varchar mode "quality_check or full_analysis"
+        float quality_score "Quality score 0-100"
+        float job_match_score "Job match score 0-100"
+        float impact_score "Impact score 0-100"
+        float structure_score "Structure score 0-100"
+        float overall_score "Overall composite score"
+        text results_json "Complete analysis results"
+        varchar resume_preview "First 500 chars"
+        int skills_count "Number of skills found"
+        int matched_keywords_count "Matched keywords"
+        int missing_keywords_count "Missing keywords"
+    }
+    
+    USER ||--o{ ANALYSIS : "performs"
+    
+    USER {
+        int id PK "Future: User ID"
+        varchar email "Future: User email"
+        varchar name "Future: User name"
+    }
+```
+
+
+================================================================================
+
+
+10. USE CASE DIAGRAM - SYSTEM FUNCTIONALITIES
+================================================================================
+
+```mermaid
+graph TB
+    subgraph System["NLP Resume Analyzer System"]
+        UC1[Upload Resume]
+        UC2[Provide Job Description]
+        UC3[Quality Check Mode]
+        UC4[View Analysis Results]
+        UC5[View History]
+        UC6[Search Analyses]
+        UC7[Filter by Mode]
+        UC8[Export to CSV]
+        UC9[Export to JSON]
+        UC10[Delete Analysis]
+        UC11[View Skills Database]
+        UC12[Toggle Dark Mode]
+    end
+    
+    JobSeeker([Job Seeker])
+    Recruiter([Recruiter])
+    System_Admin([System Admin])
+    
+    JobSeeker --> UC1
+    JobSeeker --> UC2
+    JobSeeker --> UC3
+    JobSeeker --> UC4
+    JobSeeker --> UC5
+    JobSeeker --> UC6
+    JobSeeker --> UC7
+    JobSeeker --> UC8
+    JobSeeker --> UC9
+    JobSeeker --> UC11
+    JobSeeker --> UC12
+    
+    Recruiter --> UC1
+    Recruiter --> UC2
+    Recruiter --> UC4
+    Recruiter --> UC5
+    Recruiter --> UC8
+    
+    System_Admin --> UC10
+    
+    UC1 -.->|includes| UC3
+    UC5 -.->|includes| UC6
+    UC5 -.->|includes| UC7
+    UC4 -.->|extends| UC8
+    UC4 -.->|extends| UC9
+    
+    style JobSeeker fill:#e3f2fd
+    style Recruiter fill:#fff3e0
+    style System_Admin fill:#f3e5f5
+```
+
+
+================================================================================
+
+
+11. PACKAGE DIAGRAM - SYSTEM MODULES
+================================================================================
+
+```mermaid
+graph TB
+    subgraph WebApp["<<package>><br/>web_app"]
+        APP[app.py<br/>Flask Application]
+        MODELS[models.py<br/>Database Models]
+        TEMPLATES[templates/<br/>HTML Templates]
+        STATIC[static/<br/>CSS & JS]
+    end
+    
+    subgraph NLPEngine["<<package>><br/>nlp_engine"]
+        PARSER[parser.py<br/>Text Extraction]
+        ANALYZER[analyzer.py<br/>Analysis Engine]
+        CONFIG[config_loader.py<br/>Configuration]
+    end
+    
+    subgraph Data["<<package>><br/>data"]
+        DB[(resume_analyzer.db<br/>SQLite Database)]
+        SAMPLES[sample_resumes/<br/>Test Data]
+        JD[job_descriptions/<br/>Sample JDs]
+    end
+    
+    subgraph Config["<<package>><br/>config"]
+        SKILLS[skills.yaml<br/>Skills Taxonomy]
+        VERBS[action_verbs.yaml<br/>Verb Categories]
+    end
+    
+    subgraph Tests["<<package>><br/>tests"]
+        TEST1[test_analyzer.py]
+        TEST2[test_action_verb_scoring.py]
+        TEST3[test_sch36_implementation.py]
+    end
+    
+    subgraph Docs["<<package>><br/>docs"]
+        DOC1[PROJECT_REPORT.md]
+        DOC2[PROJECT_METHODOLOGY.txt]
+        DOC3[HISTORY_PAGE.md]
+        DOC4[DATA_EXPORT.md]
+    end
+    
+    APP --> MODELS
+    APP --> PARSER
+    APP --> ANALYZER
+    APP --> DB
+    
+    PARSER --> CONFIG
+    ANALYZER --> CONFIG
+    
+    CONFIG --> SKILLS
+    CONFIG --> VERBS
+    
+    MODELS --> DB
+    
+    TEST1 --> ANALYZER
+    TEST2 --> PARSER
+    TEST3 --> ANALYZER
+    
+    style WebApp fill:#e3f2fd
+    style NLPEngine fill:#fff3e0
+    style Data fill:#f3e5f5
+    style Config fill:#e8f5e9
+```
+
+
+================================================================================
+
+
+12. INTERACTION OVERVIEW DIAGRAM - EXPORT WORKFLOW
+================================================================================
+
+```mermaid
+flowchart TD
+    Start([User on History Page]) --> Action{User Action}
+    
+    Action -->|Click Export CSV| CSV_Flow
+    Action -->|Click Export JSON| JSON_Flow
+    
+    subgraph CSV_Flow["CSV Export Process"]
+        CSV1[Get Current Filters]
+        CSV2[Query Database with Filters]
+        CSV3[Create CSV in Memory]
+        CSV4[Write Header Row]
+        CSV5[Write Data Rows]
+        CSV6[Generate Timestamp Filename]
+        CSV7[Create Download Response]
+        
+        CSV1 --> CSV2
+        CSV2 --> CSV3
+        CSV3 --> CSV4
+        CSV4 --> CSV5
+        CSV5 --> CSV6
+        CSV6 --> CSV7
+    end
+    
+    subgraph JSON_Flow["JSON Export Process"]
+        JSON1[Get Analysis ID]
+        JSON2[Query Single Analysis]
+        JSON3[Convert to Dictionary]
+        JSON4[Format as JSON]
+        JSON5[Generate Filename]
+        JSON6[Create Download Response]
+        
+        JSON1 --> JSON2
+        JSON2 --> JSON3
+        JSON3 --> JSON4
+        JSON4 --> JSON5
+        JSON5 --> JSON6
+    end
+    
+    CSV7 --> Download[Browser Downloads File]
+    JSON6 --> Download
+    
+    Download --> End([Export Complete])
+```
+
+
+================================================================================
+
+
+13. TIMING DIAGRAM - ANALYSIS PERFORMANCE
+================================================================================
+
+```mermaid
+gantt
+    title Resume Analysis Performance Timeline
+    dateFormat  s
+    axisFormat  %S sec
+    
+    section File Upload
+    File Upload & Validation    :0, 1s
+    
+    section Text Processing
+    PDF/DOCX Extraction         :1, 2s
+    Text Cleaning               :2, 1s
+    
+    section Entity Recognition
+    Name Extraction             :3, 0.5s
+    Email & Phone Extraction    :3, 0.5s
+    
+    section NLP Processing
+    Spacy Model Loading         :4, 2s
+    Text Tokenization           :6, 1s
+    Skills Extraction           :7, 1.5s
+    Action Verb Detection       :8, 1s
+    
+    section Analysis Engine
+    Semantic Embedding          :9, 2s
+    Similarity Calculation      :11, 1s
+    Keyword Matching            :12, 1s
+    
+    section Scoring
+    Impact Score                :13, 0.5s
+    Structure Score             :13, 0.5s
+    Clarity Score               :14, 0.5s
+    Overall Score               :14, 0.5s
+    
+    section Database
+    Save to Database            :15, 0.5s
+    
+    section Response
+    Format Results              :15, 0.5s
+    Render HTML                 :16, 1s
+    
+    Total Time: ~17 seconds
+```
+
+
+================================================================================
+
+
+14. COMMUNICATION DIAGRAM - MODULE INTERACTIONS
+================================================================================
+
+```mermaid
+graph LR
+    A[User Browser] <-->|1: HTTP Request/Response| B[Flask App]
+    B <-->|2: File Operations| C[File Handler]
+    B <-->|3: Parse Resume| D[Resume Parser]
+    B <-->|4: Analyze Content| E[Resume Analyzer]
+    B <-->|5: Database Operations| F[Database Manager]
+    
+    D <-->|3.1: Load NLP Models| G[NLP Models]
+    D <-->|3.2: Match Skills| H[Skills Taxonomy]
+    
+    E <-->|4.1: Calculate Embeddings| G
+    E <-->|4.2: Load Config| I[Config Loader]
+    E <-->|4.3: Match Verbs| J[Action Verbs DB]
+    
+    F <-->|5.1: CRUD Operations| K[(SQLite Database)]
+    
+    I <-->|Load| H
+    I <-->|Load| J
+    
+    style A fill:#e3f2fd
+    style B fill:#fff3e0
+    style K fill:#f3e5f5
+    style G fill:#e8f5e9
+```
+
+
+================================================================================
+
+
+15. DEPLOYMENT ARCHITECTURE DIAGRAM
+================================================================================
+
+```mermaid
+graph TB
+    subgraph ClientSide["Client-Side Environment"]
+        Browser[Modern Web Browser]
+        LocalStorage[Browser Local Storage]
+    end
+    
+    subgraph ServerSide["Server-Side Environment - localhost:8080"]
+        FlaskServer[Flask Development Server]
+        WSGIServer[Werkzeug WSGI Server]
+        PythonRuntime[Python 3.13 Runtime]
+    end
+    
+    subgraph ApplicationCode["Application Code - src/"]
+        WebApp[web_app/ Module]
+        NLPEngine[nlp_engine/ Module]
+    end
+    
+    subgraph Dependencies["Python Dependencies - venv/"]
+        Flask[Flask Framework]
+        Spacy[Spacy NLP]
+        Transformers[Sentence Transformers]
+        SQLAlchemy[SQLAlchemy ORM]
+        PyPDF2[PDF Processing]
+    end
+    
+    subgraph DataStore["Data Storage - data/"]
+        SQLite[(SQLite Database)]
+        Config[YAML Config Files]
+        Uploads[Temporary Uploads]
+    end
+    
+    subgraph MLModels["ML Models Cache"]
+        SpacyModel[en_core_web_sm]
+        BERTModel[all-MiniLM-L6-v2]
+    end
+    
+    Browser -->|HTTPS| FlaskServer
+    FlaskServer --> WSGIServer
+    WSGIServer --> PythonRuntime
+    
+    PythonRuntime --> WebApp
+    PythonRuntime --> NLPEngine
+    
+    WebApp --> Flask
+    WebApp --> SQLAlchemy
+    
+    NLPEngine --> Spacy
+    NLPEngine --> Transformers
+    NLPEngine --> PyPDF2
+    
+    SQLAlchemy --> SQLite
+    WebApp --> Config
+    WebApp --> Uploads
+    
+    Spacy --> SpacyModel
+    Transformers --> BERTModel
+    
+    Browser --> LocalStorage
+    
+    style Browser fill:#e3f2fd
+    style FlaskServer fill:#fff3e0
+    style SQLite fill:#f3e5f5
+    style SpacyModel fill:#e8f5e9
+```
+
+
+================================================================================
+                            END OF UML DIAGRAMS
+================================================================================
+
+NOTE: To use these diagrams:
+1. Copy any mermaid code block
+2. Paste into https://mermaid.live/ for live preview
+3. Export as PNG/SVG for inclusion in your report
+4. Or use VS Code with Mermaid Preview extension
+5. Or use any Markdown renderer that supports Mermaid
+
+These diagrams provide comprehensive visualization of:
+- System architecture and class relationships
+- User interaction flows and workflows
+- Application state management
+- Component organization
+- Data flow and processing
+- Database schema
+- Use cases and functionalities
+- Module packaging and dependencies
+- Deployment architecture
+- Performance timing
+- Export processes
+
+================================================================================
