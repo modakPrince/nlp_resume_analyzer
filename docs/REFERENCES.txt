@@ -1,0 +1,60 @@
+================================================================================
+                    REFERENCES - NLP RESUME ANALYZER PROJECT
+================================================================================
+
+This document lists the key references and resources consulted during the
+development of the NLP Resume Analyzer project.
+
+================================================================================
+
+
+1. Python Official Documentation
+   https://docs.python.org/3/
+   - Core Python language reference and standard library documentation
+
+2. Flask Web Framework Documentation
+   https://flask.palletsprojects.com/
+   - Web application development, routing, and template rendering
+
+3. Spacy - Industrial-Strength Natural Language Processing
+   https://spacy.io/
+   - NLP library documentation, models, and usage examples
+
+4. Sentence Transformers Documentation
+   https://www.sbert.net/
+   - Semantic text embeddings and similarity calculation using BERT
+
+5. SQLAlchemy Documentation
+   https://docs.sqlalchemy.org/
+   - Database ORM, models, and query building reference
+
+6. Tailwind CSS Documentation
+   https://tailwindcss.com/docs
+   - Utility-first CSS framework and styling guidelines
+
+7. Docker Documentation
+   https://docs.docker.com/
+   - Containerization, image building, and deployment
+
+8. Hugging Face Model Hub - all-MiniLM-L6-v2
+   https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2
+   - BERT-based sentence transformer model for semantic similarity
+
+9. Real Python - Flask Tutorials
+   https://realpython.com/tutorials/flask/
+   - Practical Flask development tutorials and best practices
+
+10. Mermaid.js Documentation
+    https://mermaid.js.org/
+    - Text-based diagram creation and visualization syntax
+
+
+================================================================================
+                              END OF REFERENCES
+================================================================================
+
+Document Version: 1.0
+Last Updated: October 7, 2025
+Project: NLP Resume Analyzer
+
+================================================================================

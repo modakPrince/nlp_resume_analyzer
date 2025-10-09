@@ -1,0 +1,37 @@
+================================================================================
+                    RESOURCES - NLP RESUME ANALYZER PROJECT
+================================================================================
+
+This document lists all the resources, references, and tools used during the
+development of the NLP Resume Analyzer project.
+
+================================================================================
+
+**Official Documentation:**
+• Python Documentation - https://docs.python.org/3/
+• Flask Documentation - https://flask.palletsprojects.com/
+• Spacy Documentation - https://spacy.io/
+• Sentence Transformers - https://www.sbert.net/
+• SQLAlchemy Documentation - https://docs.sqlalchemy.org/
+• Tailwind CSS Documentation - https://tailwindcss.com/docs
+
+**Machine Learning Models:**
+• Spacy en_core_web_sm - https://spacy.io/models/en
+• BERT all-MiniLM-L6-v2 - https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2
+
+**Development Tools:**
+• Visual Studio Code - https://code.visualstudio.com/
+• GitHub - https://github.com/
+• Docker Documentation - https://docs.docker.com/
+• pytest Documentation - https://docs.pytest.org/
+
+**Learning Resources:**
+• Real Python (Flask tutorials) - https://realpython.com/
+• Towards Data Science (NLP articles) - https://towardsdatascience.com/
+• Stack Overflow - https://stackoverflow.com/
+
+**Diagram Tools:**
+• Mermaid Live Editor - https://mermaid.live/
+• Mermaid Documentation - https://mermaid.js.org/
+
+================================================================================

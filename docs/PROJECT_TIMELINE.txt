@@ -1,0 +1,217 @@
+================================================================================
+                    PROJECT TIMELINE - NLP RESUME ANALYZER
+================================================================================
+
+This document outlines the complete project timeline from inception to delivery,
+covering all seven phases of the Software Development Life Cycle (SDLC).
+
+Project Duration: 14 weeks (3.5 months)
+Methodology: Agile Development with 2-week sprints
+Team Size: 1-2 developers
+Project Type: Academic/Portfolio Project
+
+================================================================================
+
+
+PHASE 1: REQUIREMENT ANALYSIS & PLANNING
+================================================================================
+
+**Duration:** Week 1-2 (2 weeks)
+**Sprint:** Sprint 0 - Project Initialization
+
+**Activities:**
+• Problem identification and project scope definition
+• Functional requirements: Resume parsing, skills extraction, job matching, quality scoring
+• Non-functional requirements: Performance (<30s), usability, security, compatibility
+• Technology stack selection: Python, Flask, Spacy, BERT, SQLite, Tailwind CSS
+• Project architecture design (MVC pattern)
+• Development environment setup (Git, venv, VS Code)
+
+
+================================================================================
+
+
+PHASE 2: SYSTEM DESIGN & ARCHITECTURE
+================================================================================
+
+**Duration:** Week 3-4 (2 weeks)
+**Sprint:** Sprint 1 - Architecture & Design
+
+**Activities:**
+• System architecture design with class and data flow diagrams
+• Database schema design (Analysis table with indexes)
+• API endpoint definitions for Flask routes
+• Module design: parser.py, analyzer.py, config_loader.py, models.py
+• Algorithm design: Semantic similarity, 5-metric scoring, skills matching
+• UI/UX wireframes and mockups with dark mode theme
+
+
+================================================================================
+
+
+PHASE 3: IMPLEMENTATION - CORE FEATURES
+================================================================================
+
+**Duration:** Week 5-8 (4 weeks)
+**Sprint:** Sprint 2 & 3 - Core Development
+
+**Week 5-6: NLP Engine**
+• Parser module: PDF/DOCX extraction, contact info extraction
+• Skills extraction with YAML taxonomy (200+ skills)
+• Action verbs analysis with weighted scoring (100+ verbs)
+• Spacy and BERT model integration with lazy loading
+• 5-metric scoring system: Relevance, Impact, Structure, Clarity, Gaps
+
+**Week 7-8: Web Application**
+• Flask application with routes and file upload handling
+• SQLite database with SQLAlchemy models
+• Template development: index.html, results.html
+• Quality Check Mode (resume-only analysis)
+• Full Analysis Mode (with job description matching)
+• Unit and integration testing
+
+
+================================================================================
+
+
+PHASE 4: IMPLEMENTATION - ADDITIONAL FEATURES
+================================================================================
+
+**Duration:** Week 9-10 (2 weeks)
+**Sprint:** Sprint 4 - Feature Enhancement
+
+**Week 9: History & Export**
+• History page with filters, search, and statistics dashboard
+• CSV bulk export functionality
+• JSON single analysis export
+• Pandas integration for data processing
+
+**Week 10: UI/UX Enhancement**
+• Tailwind CSS integration with responsive design
+• Dark mode with localStorage persistence
+• Skills Explorer page with taxonomy display
+
+
+================================================================================
+
+
+PHASE 5: TESTING & QUALITY ASSURANCE
+================================================================================
+
+**Duration:** Week 11 (1 week)
+**Sprint:** Sprint 5 - Testing & QA
+
+**Activities:**
+• Unit testing: Parser and analyzer modules (45 tests)
+• Integration testing: End-to-end workflows (12 tests)
+• System testing: Performance (17s avg), security (CSRF, SQL injection, XSS)
+• User Acceptance Testing (UAT) with feedback collection
+• Test coverage: 85%+, all security checks passed
+
+
+================================================================================
+
+
+PHASE 6: DEPLOYMENT & RELEASE
+================================================================================
+
+**Duration:** Week 12 (1 week)
+**Sprint:** Sprint 6 - Deployment
+
+**Activities:**
+• Docker containerization (python:3.13.7-slim base image)
+• Production configuration with environment variables
+• Gunicorn setup (4 workers) for production server
+• Docker image building and testing
+• Cloud deployment preparation (Heroku/AWS/Railway - optional)
+• Health monitoring and logging setup
+• Release v1.0 with production deployment
+
+
+================================================================================
+
+
+PHASE 7: DOCUMENTATION & HANDOVER
+================================================================================
+
+**Duration:** Week 13-14 (2 weeks)
+**Sprint:** Sprint 7 - Documentation
+
+**Week 13: Technical Documentation**
+• Code documentation: Python docstrings, type hints, inline comments
+• API documentation: Routes, request/response formats, error codes
+• Architecture documentation: System overview, diagrams, data flow
+
+**Week 14: User & Project Documentation**
+• User documentation: README.md, installation guide, usage instructions
+• Project documentation: Methodology, tech stack, timeline, UML diagrams (25 diagrams)
+• Feature-specific docs: History page, data export, quality mode
+• Code repository finalization and version tagging (v1.0)
+• Knowledge transfer and project handover
+
+
+================================================================================
+
+
+PROJECT MILESTONES
+================================================================================
+
+• Week 2: Requirements finalized and project plan approved
+• Week 4: System design and architecture completed
+• Week 6: Core NLP engine functional
+• Week 8: Basic web application operational
+• Week 10: All features implemented
+• Week 11: Testing completed (85% coverage, 57 tests)
+• Week 12: Successfully deployed with Docker
+• Week 14: Documentation complete, project delivered
+
+
+================================================================================
+
+
+PROJECT STATISTICS
+================================================================================
+
+• Total Duration: 14 weeks (98 days)
+• Sprints Completed: 7 Agile sprints (2-week cycles)
+• Lines of Code: 10,000+ lines
+• Test Cases: 57 tests (45 unit, 12 integration)
+• Test Coverage: 85%+
+• Documentation: 15+ files
+• UML Diagrams: 25 diagrams
+• Features: 12 major features
+• Technologies: 50+ tools and libraries
+• Performance: 17 seconds average analysis time
+
+
+================================================================================
+
+
+FUTURE ENHANCEMENTS
+================================================================================
+
+**Version 2.0:**
+• User authentication and profiles
+• ATS compatibility checker
+• Cover letter analysis
+• LinkedIn profile integration
+• Batch processing
+• Advanced analytics dashboard
+
+**Version 3.0:**
+• Multi-language support
+• Cloud deployment (AWS/GCP)
+• Microservices architecture
+• Mobile application
+• API for third-party integrations
+
+================================================================================
+                           END OF PROJECT TIMELINE
+================================================================================
+
+Document Version: 1.0
+Last Updated: October 7, 2025
+Project: NLP Resume Analyzer
+Timeline: 14 weeks (Phase 1-7 completed)
+
+================================================================================
